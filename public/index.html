@@ -22,20 +22,9 @@
       align-items: center;
       gap: 12px;
     }
-
-    header svg { width: 32px; height: 32px; }
-
-    header h1 {
-      font-size: 20px;
-      font-weight: 600;
-      color: #f0f6fc;
-    }
-
-    header span {
-      font-size: 13px;
-      color: #8b949e;
-      margin-left: 4px;
-    }
+    header svg { width: 28px; height: 28px; }
+    header h1 { font-size: 18px; font-weight: 600; color: #f0f6fc; }
+    header span { font-size: 13px; color: #8b949e; margin-left: 4px; }
 
     main {
       max-width: 1100px;
@@ -43,67 +32,244 @@
       padding: 40px 24px;
       display: flex;
       flex-direction: column;
-      gap: 48px;
+      gap: 56px;
     }
 
-    /* ── Section titles ── */
+    /* ── Section title ── */
     .section-title {
       font-size: 18px;
       font-weight: 600;
       color: #f0f6fc;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      margin-bottom: 24px;
     }
 
-    /* ── Onboarding steps ── */
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
-    }
-
-    .step {
+    /* ════════════════════════════════════════
+       WIZARD
+    ════════════════════════════════════════ */
+    .wizard {
       background: #161b22;
       border: 1px solid #30363d;
-      border-radius: 10px;
-      padding: 20px 24px;
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
+      border-radius: 12px;
+      overflow: hidden;
     }
 
-    .step-num {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #1f6feb;
-      color: #fff;
-      font-size: 13px;
-      font-weight: 700;
+    /* Step tabs */
+    .wizard-tabs {
+      display: flex;
+      border-bottom: 1px solid #30363d;
+    }
+
+    .wizard-tab {
+      flex: 1;
+      padding: 16px 12px;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: #8b949e;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background .15s, color .15s;
+      border-bottom: 2px solid transparent;
+      position: relative;
+      top: 1px;
+    }
+    .wizard-tab:not(:last-child) { border-right: 1px solid #30363d; }
+    .wizard-tab:hover { background: #1c2128; color: #e6edf3; }
+    .wizard-tab.active { color: #f0f6fc; border-bottom-color: #1f6feb; background: #1c2128; }
+
+    .tab-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #30363d;
+      color: #8b949e;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      margin-top: 2px;
+      transition: background .15s, color .15s;
+    }
+    .wizard-tab.active .tab-num  { background: #1f6feb; color: #fff; }
+    .wizard-tab.done  .tab-num  { background: #238636; color: #fff; }
+    .wizard-tab.done  { color: #3fb950; }
+
+    /* Step content */
+    .wizard-step { display: none; padding: 40px 48px; }
+    .wizard-step.active { display: flex; gap: 48px; align-items: flex-start; }
+
+    .step-left { flex: 1; min-width: 0; }
+    .step-right { flex: 1; min-width: 0; }
+
+    .step-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #1f6feb;
+      margin-bottom: 10px;
     }
 
-    .step h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #f0f6fc; }
-    .step p  { font-size: 13px; color: #8b949e; line-height: 1.5; }
-    .step code {
+    .step-headline {
+      font-size: 26px;
+      font-weight: 700;
+      color: #f0f6fc;
+      line-height: 1.25;
+      margin-bottom: 16px;
+    }
+
+    .step-body {
+      font-size: 14px;
+      color: #8b949e;
+      line-height: 1.7;
+    }
+    .step-body strong { color: #e6edf3; }
+    .step-body a { color: #58a6ff; text-decoration: none; }
+    .step-body a:hover { text-decoration: underline; }
+
+    .step-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 28px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      background: #1f6feb;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .step-cta:hover { background: #388bfd; }
+    .step-cta-ghost {
+      background: transparent;
+      border: 1px solid #30363d;
+      color: #8b949e;
+      margin-left: 10px;
+    }
+    .step-cta-ghost:hover { background: #1c2128; color: #e6edf3; }
+
+    /* Code block */
+    .code-block {
       background: #0d1117;
       border: 1px solid #30363d;
-      border-radius: 4px;
-      padding: 1px 6px;
-      font-size: 12px;
-      color: #79c0ff;
-      font-family: 'SFMono-Regular', Consolas, monospace;
+      border-radius: 8px;
+      overflow: hidden;
     }
-    .step a { color: #58a6ff; text-decoration: none; }
-    .step a:hover { text-decoration: underline; }
+    .code-header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .code-filename { font-size: 12px; color: #8b949e; font-family: monospace; }
+    .copy-btn {
+      font-size: 11px;
+      color: #8b949e;
+      background: none;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      padding: 2px 8px;
+      cursor: pointer;
+    }
+    .copy-btn:hover { color: #e6edf3; border-color: #8b949e; }
+    pre {
+      padding: 20px;
+      font-size: 13px;
+      line-height: 1.6;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      overflow-x: auto;
+      margin: 0;
+    }
+    .hl-key   { color: #79c0ff; }
+    .hl-val   { color: #a5d6ff; }
+    .hl-str   { color: #a5d6ff; }
+    .hl-num   { color: #f2cc60; }
+    .hl-cmt   { color: #8b949e; font-style: italic; }
+    .hl-grn   { color: #3fb950; }
+    .hl-muted { color: #8b949e; }
+    .hl-arrow { color: #ff7b72; }
 
-    /* ── Apps table ── */
+    /* Provision list */
+    .provision-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .provision-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: #e6edf3;
+    }
+    .provision-list .icon {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .icon-green  { background: #1a2f1a; }
+    .icon-blue   { background: #0d2043; }
+    .icon-purple { background: #1e1229; }
+    .icon-orange { background: #2b1800; }
+
+    /* flow diagram */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .flow-box {
+      background: #1c2128;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-family: monospace;
+      color: #e6edf3;
+      white-space: nowrap;
+    }
+    .flow-arrow {
+      color: #30363d;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 0;
+      margin-left: 36px;
+    }
+    .flow-label {
+      color: #8b949e;
+      font-size: 12px;
+    }
+
+    /* nav buttons */
+    .wizard-nav {
+      padding: 20px 48px;
+      border-top: 1px solid #30363d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .step-indicator { font-size: 12px; color: #8b949e; }
+
+    /* ════════════════════════════════════════
+       APPS TABLE
+    ════════════════════════════════════════ */
     .card {
       background: #161b22;
       border: 1px solid #30363d;
@@ -111,18 +277,15 @@
       overflow: hidden;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+    table { width: 100%; border-collapse: collapse; }
 
     th {
       background: #161b22;
       color: #8b949e;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .04em;
+      letter-spacing: .05em;
       padding: 12px 16px;
       text-align: left;
       border-bottom: 1px solid #30363d;
@@ -130,20 +293,17 @@
 
     td {
       padding: 14px 16px;
-      font-size: 14px;
+      font-size: 13px;
       border-bottom: 1px solid #21262d;
       vertical-align: middle;
     }
-
     tr:last-child td { border-bottom: none; }
-
     tr:hover td { background: #1c2128; }
 
     .app-name {
       font-weight: 600;
       color: #f0f6fc;
       font-family: 'SFMono-Regular', Consolas, monospace;
-      font-size: 13px;
     }
 
     .dot {
@@ -151,17 +311,15 @@
       width: 8px; height: 8px;
       border-radius: 50%;
       margin-right: 6px;
-      flex-shrink: 0;
     }
     .dot-green  { background: #3fb950; box-shadow: 0 0 6px #3fb95066; }
     .dot-yellow { background: #d29922; }
     .dot-red    { background: #f85149; }
     .dot-grey   { background: #484f58; }
 
-    .env-cell { display: flex; align-items: center; font-size: 13px; color: #8b949e; }
+    .env-cell { display: flex; align-items: center; color: #8b949e; }
 
     .links { display: flex; flex-wrap: wrap; gap: 6px; }
-
     .btn {
       display: inline-block;
       padding: 4px 10px;
@@ -173,7 +331,6 @@
       transition: opacity .15s;
     }
     .btn:hover { opacity: .75; }
-
     .btn-blue   { color: #79c0ff; border-color: #1f6feb44; background: #1f6feb18; }
     .btn-green  { color: #56d364; border-color: #2ea04344; background: #2ea04318; }
     .btn-orange { color: #ffa657; border-color: #d2992244; background: #d2992218; }
@@ -182,50 +339,177 @@
 
     .loading { color: #8b949e; font-size: 14px; padding: 32px 16px; text-align: center; }
     .error   { color: #f85149; font-size: 14px; padding: 32px 16px; text-align: center; }
+
+    @media (max-width: 700px) {
+      .wizard-step.active { flex-direction: column; padding: 24px; }
+      .wizard-nav { padding: 16px 24px; }
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 32 32" fill="none">
     <rect width="32" height="32" rx="8" fill="#1f6feb"/>
-    <path d="M8 16L14 10L20 16L14 22L8 16Z" fill="white" opacity=".8"/>
-    <path d="M14 16L20 10L26 16L20 22L14 16Z" fill="white"/>
+    <path d="M8 16L14 10L20 16L14 22Z" fill="white" opacity=".8"/>
+    <path d="M14 16L20 10L26 16L20 22Z" fill="white"/>
   </svg>
   <h1>EasyDeploy Portal <span>— developer dashboard</span></h1>
 </header>
 
 <main>
 
-  <!-- Onboarding -->
+  <!-- ── Wizard ── -->
   <section>
-    <div class="section-title">🚀 Deploy your app in 3 steps</div>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div>
-          <h3>Create repo from template</h3>
-          <p>Go to <a href="https://github.com/easydeploytest/template" target="_blank">github.com/easydeploytest/template</a> and click <strong>Use this template → Create a new repository</strong>. Make sure to create it inside the <code>easydeploytest</code> org.</p>
+    <div class="section-title">🚀 Ship your app in under 5 minutes</div>
+
+    <div class="wizard">
+
+      <!-- Tabs -->
+      <div class="wizard-tabs" role="tablist">
+        <button class="wizard-tab active" onclick="goTo(0)" id="tab-0">
+          <span class="tab-num">1</span> Create your repo
+        </button>
+        <button class="wizard-tab" onclick="goTo(1)" id="tab-1">
+          <span class="tab-num">2</span> One config file
+        </button>
+        <button class="wizard-tab" onclick="goTo(2)" id="tab-2">
+          <span class="tab-num">3</span> Push &amp; go live
+        </button>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="wizard-step active" id="step-0">
+        <div class="step-left">
+          <div class="step-eyebrow">Step 1 of 3</div>
+          <div class="step-headline">Start from the template.<br/>Skip the boilerplate.</div>
+          <div class="step-body">
+            <p>The template repo already has a <code>Dockerfile</code>, a CI workflow, and a health endpoint. You don't need to configure any of that.</p>
+            <br/>
+            <p>Click <strong>Use this template → Create a new repository</strong> — make sure the repo is inside the <strong>easydeploytest</strong> org so CI picks up the shared credentials automatically.</p>
+            <br/>
+            <p>That's your only prerequisite. No platform tickets. No access requests.</p>
+          </div>
+          <a class="step-cta" href="https://github.com/easydeploytest/template" target="_blank">
+            Open template on GitHub ↗
+          </a>
+        </div>
+        <div class="step-right">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-filename">your-repo/</span>
+            </div>
+            <pre><span class="hl-grn">├── src/</span>           <span class="hl-cmt">← your code goes here</span>
+<span class="hl-grn">├── Dockerfile</span>     <span class="hl-cmt">← already there</span>
+<span class="hl-grn">├── app.yaml</span>       <span class="hl-cmt">← you edit this (next step)</span>
+<span class="hl-grn">└── RUNBOOK.md</span>     <span class="hl-cmt">← auto-generated on deploy</span></pre>
+          </div>
+          <div style="margin-top:16px; font-size:12px; color:#8b949e; line-height:1.6;">
+            The <strong style="color:#e6edf3">RUNBOOK.md</strong> is generated automatically on every deploy — all your URLs, secrets link, dashboard link, and rollback instructions. Always up to date.
+          </div>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div>
-          <h3>Configure <code>app.yaml</code></h3>
-          <p>Set <code>name</code> (unique, lowercase, ≥5 chars), <code>team</code>, and <code>port</code> to match your app's HTTP server. Commit your <code>Dockerfile</code>.</p>
+
+      <!-- Step 2 -->
+      <div class="wizard-step" id="step-1">
+        <div class="step-left">
+          <div class="step-eyebrow">Step 2 of 3</div>
+          <div class="step-headline">Three lines.<br/>That's the entire config.</div>
+          <div class="step-body">
+            <p>Edit <code>app.yaml</code>. Set your app's name, the team it belongs to, and the port your HTTP server listens on.</p>
+            <br/>
+            <p><strong>That's the only platform file you write.</strong> From those three lines the platform generates:</p>
+            <ul style="margin-top:12px; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:8px;">
+              <li>✅ &nbsp;HTTPS endpoints for dev <em>and</em> prod</li>
+              <li>✅ &nbsp;TLS certificate — auto-provisioned, auto-renewed</li>
+              <li>✅ &nbsp;Secrets vault, isolated per app</li>
+              <li>✅ &nbsp;Grafana dashboard with traces, logs, metrics</li>
+              <li>✅ &nbsp;ArgoCD GitOps deployment pipeline</li>
+              <li>✅ &nbsp;Deploy notifications</li>
+            </ul>
+          </div>
+        </div>
+        <div class="step-right">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-filename">app.yaml</span>
+              <button class="copy-btn" onclick="copyYaml()">Copy</button>
+            </div>
+            <pre id="yaml-snippet"><span class="hl-key">name</span><span class="hl-muted">:</span> <span class="hl-str">your-app</span>   <span class="hl-cmt"># unique, lowercase</span>
+<span class="hl-key">team</span><span class="hl-muted">:</span> <span class="hl-str">easy-deploy</span>
+<span class="hl-key">port</span><span class="hl-muted">:</span> <span class="hl-num">3000</span>        <span class="hl-cmt"># whatever your server uses</span></pre>
+          </div>
+          <div style="margin-top: 20px;">
+            <div style="font-size:12px; color:#8b949e; margin-bottom:8px; font-weight:600; text-transform:uppercase; letter-spacing:.05em;">Your URLs after first deploy</div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div style="background:#0d1117; border:1px solid #30363d; border-radius:6px; padding:8px 12px; font-family:monospace; font-size:12px; color:#58a6ff;">https://your-app-dev.easy-deploy.135.181.177.246.nip.io</div>
+              <div style="background:#0d1117; border:1px solid #30363d; border-radius:6px; padding:8px 12px; font-family:monospace; font-size:12px; color:#3fb950;">https://your-app.easy-deploy.135.181.177.246.nip.io</div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div>
-          <h3>Push to <code>main</code> — that's it</h3>
-          <p>CI triggers automatically. EasyDeploy builds your image, provisions Infisical, wires ArgoCD, and creates a Grafana dashboard. Your app appears in the table below when it's healthy.</p>
+
+      <!-- Step 3 -->
+      <div class="wizard-step" id="step-2">
+        <div class="step-left">
+          <div class="step-eyebrow">Step 3 of 3</div>
+          <div class="step-headline">Push to main.<br/>It's live in ~2 minutes.</div>
+          <div class="step-body">
+            <p>Commit your code, push to <code>main</code>. That's the whole workflow.</p>
+            <br/>
+            <p>CI fires automatically, dispatches to the EasyDeploy platform, and you'll get a notification when your app is healthy.</p>
+            <br/>
+            <p><strong>Deploying to prod?</strong> Publish a GitHub Release with a tag like <code>v1.0.0</code>. The platform re-tags your image and ArgoCD syncs prod automatically.</p>
+            <br/>
+            <p><strong>Secrets?</strong> Go to Infisical → your project → add env vars. They're injected into your pods within minutes — no redeploy needed.</p>
+          </div>
+          <a class="step-cta" href="https://github.com/easydeploytest/EasyDeploy/actions" target="_blank">Watch the pipeline ↗</a>
+        </div>
+        <div class="step-right">
+          <div class="flow">
+            <div class="flow-row">
+              <div class="flow-box">git push origin main</div>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-row">
+              <div class="flow-box">CI builds Docker image</div>
+              <span class="flow-label">~60s</span>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-row">
+              <div class="flow-box">Infisical project provisioned</div>
+              <span class="flow-label">auto</span>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-row">
+              <div class="flow-box">ArgoCD syncs deployment</div>
+              <span class="flow-label">auto</span>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-row">
+              <div class="flow-box">Grafana dashboard created</div>
+              <span class="flow-label">auto</span>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-row">
+              <div class="flow-box" style="border-color:#238636; color:#3fb950;">✅ &nbsp;Your app is live</div>
+              <span class="flow-label">notification sent</span>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Nav -->
+      <div class="wizard-nav">
+        <button class="step-cta step-cta-ghost" id="btn-prev" onclick="goTo(current-1)" style="display:none">← Back</button>
+        <span class="step-indicator" id="step-indicator">Step 1 of 3</span>
+        <button class="step-cta" id="btn-next" onclick="goTo(current+1)">Next →</button>
+      </div>
+
     </div>
   </section>
 
-  <!-- Apps dashboard -->
+  <!-- ── Apps dashboard ── -->
   <section>
     <div class="section-title">📦 Deployed apps</div>
     <div class="card">
@@ -248,11 +532,44 @@
 </main>
 
 <script>
+  /* ── Wizard ── */
+  let current = 0
+  const TOTAL = 3
+
+  function goTo(n) {
+    if (n < 0 || n >= TOTAL) return
+    document.getElementById('step-' + current).classList.remove('active')
+    document.getElementById('tab-' + current).classList.remove('active')
+    if (n > current) document.getElementById('tab-' + current).classList.add('done')
+
+    current = n
+    document.getElementById('step-' + current).classList.add('active')
+    document.getElementById('tab-' + current).classList.add('active')
+    document.getElementById('tab-' + current).classList.remove('done')
+
+    document.getElementById('step-indicator').textContent = `Step ${current + 1} of ${TOTAL}`
+    document.getElementById('btn-prev').style.display = current === 0 ? 'none' : ''
+    const next = document.getElementById('btn-next')
+    next.textContent = current === TOTAL - 1 ? '🚀 Go ship something' : 'Next →'
+    if (current === TOTAL - 1) {
+      next.onclick = () => window.open('https://github.com/easydeploytest/template', '_blank')
+    } else {
+      next.onclick = () => goTo(current + 1)
+    }
+  }
+
+  function copyYaml() {
+    navigator.clipboard.writeText('name: your-app\nteam: easy-deploy\nport: 3000\n')
+    const btn = document.querySelector('.copy-btn')
+    btn.textContent = 'Copied!'
+    setTimeout(() => btn.textContent = 'Copy', 1500)
+  }
+
+  /* ── Apps table ── */
   function dot(health) {
     const cls = health === 'Healthy' ? 'dot-green'
-               : health === 'Progressing' ? 'dot-yellow'
-               : health === 'Degraded' ? 'dot-red'
-               : 'dot-grey'
+              : health === 'Progressing' ? 'dot-yellow'
+              : health === 'Degraded' ? 'dot-red' : 'dot-grey'
     return `<span class="dot ${cls}"></span>`
   }
 
@@ -261,7 +578,7 @@
     return `<div class="env-cell">${dot(env.health)}${env.health}</div>`
   }
 
-  async function load() {
+  async function loadApps() {
     const tbody = document.getElementById('apps-body')
     try {
       const res = await fetch('/api/apps')
@@ -277,22 +594,22 @@
           <td>${envCell(app.prod)}</td>
           <td>
             <div class="links">
-              <a class="btn btn-blue"  href="${app.links.dev}"      target="_blank">Dev</a>
-              <a class="btn btn-green" href="${app.links.prod}"     target="_blank">Prod</a>
-              <a class="btn btn-orange" href="${app.links.argocd}"  target="_blank">ArgoCD</a>
-              <a class="btn btn-purple" href="${app.links.grafana}" target="_blank">Grafana</a>
-              <a class="btn btn-teal"  href="${app.links.infisical}" target="_blank">Infisical</a>
+              <a class="btn btn-blue"   href="${app.links.dev}"       target="_blank">Dev</a>
+              <a class="btn btn-green"  href="${app.links.prod}"      target="_blank">Prod</a>
+              <a class="btn btn-orange" href="${app.links.argocd}"    target="_blank">ArgoCD</a>
+              <a class="btn btn-purple" href="${app.links.grafana}"   target="_blank">Grafana</a>
+              <a class="btn btn-teal"   href="${app.links.infisical}" target="_blank">Infisical</a>
             </div>
           </td>
         </tr>
       `).join('')
     } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="4" class="error">Failed to load apps: ${e}</td></tr>`
+      tbody.innerHTML = `<tr><td colspan="4" class="error">Failed to load: ${e}</td></tr>`
     }
   }
 
-  load()
-  setInterval(load, 15000)
+  loadApps()
+  setInterval(loadApps, 15000)
 </script>
 
 </body>
