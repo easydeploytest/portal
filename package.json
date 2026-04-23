@@ -5,7 +5,8 @@
     "start": "bun src/index.ts"
   },
   "dependencies": {
+    "@elysiajs/static": "^1.1.1",
     "elysia": "^1.1.25",
-    "@elysiajs/static": "^1.1.1"
+    "libsodium-wrappers": "^0.8.4"
   }
 }
