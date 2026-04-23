@@ -199,48 +199,27 @@
 
   <!-- Onboarding -->
   <section>
-    <div class="section-title">🚀 Deploy your app in 5 steps</div>
+    <div class="section-title">🚀 Deploy your app in 3 steps</div>
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
         <div>
           <h3>Create repo from template</h3>
-          <p>Go to <a href="https://github.com/easydeploytest/template" target="_blank">github.com/easydeploytest/template</a> and click <strong>Use this template → Create a new repository</strong>.</p>
+          <p>Go to <a href="https://github.com/easydeploytest/template" target="_blank">github.com/easydeploytest/template</a> and click <strong>Use this template → Create a new repository</strong>. Make sure to create it inside the <code>easydeploytest</code> org.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-num">2</div>
         <div>
           <h3>Configure <code>app.yaml</code></h3>
-          <p>Set <code>name</code> (unique, lowercase), <code>team</code>, and <code>port</code> to match your app's HTTP server.</p>
+          <p>Set <code>name</code> (unique, lowercase, ≥5 chars), <code>team</code>, and <code>port</code> to match your app's HTTP server. Commit your <code>Dockerfile</code>.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-num">3</div>
         <div>
-          <h3>Add the <code>GH_PAT</code> secret</h3>
-          <p>In your repo: <strong>Settings → Secrets → Actions → New secret</strong>. Name: <code>GH_PAT</code>. Ask your platform team for the value.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div>
-          <h3>Write your app &amp; push</h3>
-          <p>Push to <code>main</code>. CI dispatches to EasyDeploy which builds the image, provisions Infisical, wires ArgoCD, and creates a Grafana dashboard.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">5</div>
-        <div>
-          <h3>Your app is live</h3>
-          <p>Dev: <code>https://&lt;name&gt;-dev.easy-deploy.135.181.177.246.nip.io</code><br/>Prod: publish a GitHub Release tagged <code>v*</code>.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">6</div>
-        <div>
-          <h3>Manage secrets</h3>
-          <p>Add env vars in <a href="https://infisical.easy-deploy.135.181.177.246.nip.io" target="_blank">Infisical</a> → your project. Changes pick up within ~5 min — no redeploy needed.</p>
+          <h3>Push to <code>main</code> — that's it</h3>
+          <p>CI triggers automatically. EasyDeploy builds your image, provisions Infisical, wires ArgoCD, and creates a Grafana dashboard. Your app appears in the table below when it's healthy.</p>
         </div>
       </div>
     </div>
