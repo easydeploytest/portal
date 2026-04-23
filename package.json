@@ -1,0 +1,11 @@
+{
+  "name": "portal",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "bun src/index.ts"
+  },
+  "dependencies": {
+    "elysia": "^1.1.25",
+    "@elysiajs/static": "^1.1.1"
+  }
+}

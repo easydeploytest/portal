@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EasyDeploy Portal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header svg { width: 32px; height: 32px; }
+
+    header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #f0f6fc;
+    }
+
+    header span {
+      font-size: 13px;
+      color: #8b949e;
+      margin-left: 4px;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #f0f6fc;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Onboarding steps ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .step {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 20px 24px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #1f6feb;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #f0f6fc; }
+    .step p  { font-size: 13px; color: #8b949e; line-height: 1.5; }
+    .step code {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 12px;
+      color: #79c0ff;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+    }
+    .step a { color: #58a6ff; text-decoration: none; }
+    .step a:hover { text-decoration: underline; }
+
+    /* ── Apps table ── */
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: #161b22;
+      color: #8b949e;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #30363d;
+    }
+
+    td {
+      padding: 14px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid #21262d;
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td { background: #1c2128; }
+
+    .app-name {
+      font-weight: 600;
+      color: #f0f6fc;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      flex-shrink: 0;
+    }
+    .dot-green  { background: #3fb950; box-shadow: 0 0 6px #3fb95066; }
+    .dot-yellow { background: #d29922; }
+    .dot-red    { background: #f85149; }
+    .dot-grey   { background: #484f58; }
+
+    .env-cell { display: flex; align-items: center; font-size: 13px; color: #8b949e; }
+
+    .links { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .btn {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      border: 1px solid;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .75; }
+
+    .btn-blue   { color: #79c0ff; border-color: #1f6feb44; background: #1f6feb18; }
+    .btn-green  { color: #56d364; border-color: #2ea04344; background: #2ea04318; }
+    .btn-orange { color: #ffa657; border-color: #d2992244; background: #d2992218; }
+    .btn-purple { color: #d2a8ff; border-color: #8957e544; background: #8957e518; }
+    .btn-teal   { color: #39d353; border-color: #39d35344; background: #39d35318; }
+
+    .loading { color: #8b949e; font-size: 14px; padding: 32px 16px; text-align: center; }
+    .error   { color: #f85149; font-size: 14px; padding: 32px 16px; text-align: center; }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="32" height="32" rx="8" fill="#1f6feb"/>
+    <path d="M8 16L14 10L20 16L14 22L8 16Z" fill="white" opacity=".8"/>
+    <path d="M14 16L20 10L26 16L20 22L14 16Z" fill="white"/>
+  </svg>
+  <h1>EasyDeploy Portal <span>— developer dashboard</span></h1>
+</header>
+
+<main>
+
+  <!-- Onboarding -->
+  <section>
+    <div class="section-title">🚀 Deploy your app in 5 steps</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Create repo from template</h3>
+          <p>Go to <a href="https://github.com/easydeploytest/template" target="_blank">github.com/easydeploytest/template</a> and click <strong>Use this template → Create a new repository</strong>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h3>Configure <code>app.yaml</code></h3>
+          <p>Set <code>name</code> (unique, lowercase), <code>team</code>, and <code>port</code> to match your app's HTTP server.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h3>Add the <code>GH_PAT</code> secret</h3>
+          <p>In your repo: <strong>Settings → Secrets → Actions → New secret</strong>. Name: <code>GH_PAT</code>. Ask your platform team for the value.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <h3>Write your app &amp; push</h3>
+          <p>Push to <code>main</code>. CI dispatches to EasyDeploy which builds the image, provisions Infisical, wires ArgoCD, and creates a Grafana dashboard.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div>
+          <h3>Your app is live</h3>
+          <p>Dev: <code>https://&lt;name&gt;-dev.easy-deploy.135.181.177.246.nip.io</code><br/>Prod: publish a GitHub Release tagged <code>v*</code>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div>
+          <h3>Manage secrets</h3>
+          <p>Add env vars in <a href="https://infisical.easy-deploy.135.181.177.246.nip.io" target="_blank">Infisical</a> → your project. Changes pick up within ~5 min — no redeploy needed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Apps dashboard -->
+  <section>
+    <div class="section-title">📦 Deployed apps</div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>App</th>
+            <th>Dev</th>
+            <th>Prod</th>
+            <th>Links</th>
+          </tr>
+        </thead>
+        <tbody id="apps-body">
+          <tr><td colspan="4" class="loading">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  function dot(health) {
+    const cls = health === 'Healthy' ? 'dot-green'
+               : health === 'Progressing' ? 'dot-yellow'
+               : health === 'Degraded' ? 'dot-red'
+               : 'dot-grey'
+    return `<span class="dot ${cls}"></span>`
+  }
+
+  function envCell(env) {
+    if (!env) return '<span style="color:#484f58">—</span>'
+    return `<div class="env-cell">${dot(env.health)}${env.health}</div>`
+  }
+
+  async function load() {
+    const tbody = document.getElementById('apps-body')
+    try {
+      const res = await fetch('/api/apps')
+      const apps = await res.json()
+      if (!Array.isArray(apps) || apps.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="loading">No apps deployed yet.</td></tr>'
+        return
+      }
+      tbody.innerHTML = apps.map(app => `
+        <tr>
+          <td class="app-name">${app.name}</td>
+          <td>${envCell(app.dev)}</td>
+          <td>${envCell(app.prod)}</td>
+          <td>
+            <div class="links">
+              <a class="btn btn-blue"  href="${app.links.dev}"      target="_blank">Dev</a>
+              <a class="btn btn-green" href="${app.links.prod}"     target="_blank">Prod</a>
+              <a class="btn btn-orange" href="${app.links.argocd}"  target="_blank">ArgoCD</a>
+              <a class="btn btn-purple" href="${app.links.grafana}" target="_blank">Grafana</a>
+              <a class="btn btn-teal"  href="${app.links.infisical}" target="_blank">Infisical</a>
+            </div>
+          </td>
+        </tr>
+      `).join('')
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="4" class="error">Failed to load apps: ${e}</td></tr>`
+    }
+  }
+
+  load()
+  setInterval(load, 15000)
+</script>
+
+</body>
+</html>

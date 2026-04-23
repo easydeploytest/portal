@@ -1,0 +1,23 @@
+name: Deploy dev
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dispatch to EasyDeploy platform
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          APP_YAML_B64=$(base64 -w0 < app.yaml)
+          curl -sf -X POST \
+            -H "Authorization: token $GH_PAT" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/easydeploytest/EasyDeploy/dispatches" \
+            -d "{\"event_type\":\"app-deploy\",\"client_payload\":{\"sha\":\"$GITHUB_SHA\",\"repo_url\":\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY\",\"app_yaml_b64\":\"$APP_YAML_B64\"}}"
+          echo "Dispatched to EasyDeploy platform"
