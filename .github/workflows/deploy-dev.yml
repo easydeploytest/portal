@@ -6,11 +6,13 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Dispatch to EasyDeploy platform
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           APP_YAML_B64=$(base64 -w0 < app.yaml)
           curl -sf -X POST \
