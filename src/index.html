@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EasyDeploy</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+
+    header { background: #161b22; border-bottom: 1px solid #30363d; padding: 14px 40px; display: flex; align-items: center; gap: 12px; }
+    header svg { width: 26px; height: 26px; }
+    .logo-name { font-size: 16px; font-weight: 700; color: #f0f6fc; }
+    .logo-tag  { font-size: 12px; color: #8b949e; }
+
+    main { max-width: 1000px; margin: 0 auto; padding: 56px 24px; display: flex; flex-direction: column; gap: 64px; }
+
+    /* wizard card */
+    .wizard-wrap { display: grid; grid-template-columns: 1fr 1fr; background: #161b22; border: 1px solid #30363d; border-radius: 14px; overflow: hidden; min-height: 380px; }
+
+    .wizard-pitch { padding: 48px 44px; background: linear-gradient(140deg,#0d2048,#0d1117); border-right: 1px solid #30363d; display: flex; flex-direction: column; justify-content: center; }
+    .pitch-kicker { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #388bfd; margin-bottom: 14px; }
+    .pitch-headline { font-size: 36px; font-weight: 800; line-height: 1.1; color: #f0f6fc; margin-bottom: 22px; }
+    .pitch-headline em { font-style: normal; color: #388bfd; }
+    .pitch-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .pitch-list li { font-size: 13px; color: #8b949e; display: flex; align-items: center; gap: 10px; }
+    .pitch-list li::before { content: '✓'; color: #3fb950; font-weight: 700; flex-shrink: 0; }
+
+    .wizard-right { padding: 48px 44px; display: flex; flex-direction: column; justify-content: center; }
+
+    .step-dots { display: flex; gap: 6px; margin-bottom: 32px; }
+    .step-dot { height: 3px; border-radius: 2px; flex: 1; background: #30363d; transition: background .3s; }
+    .step-dot.active { background: #388bfd; }
+    .step-dot.done   { background: #238636; }
+
+    .pane { display: none; }
+    .pane.active { display: block; }
+    .pane-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8b949e; margin-bottom: 8px; }
+    .pane-title { font-size: 22px; font-weight: 700; color: #f0f6fc; margin-bottom: 28px; }
+
+    /* form */
+    .field { margin-bottom: 16px; }
+    label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8b949e; margin-bottom: 6px; }
+    input { width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 11px 14px; font-size: 15px; color: #f0f6fc; outline: none; transition: border-color .15s; }
+    input::placeholder { color: #484f58; }
+    input:focus { border-color: #388bfd; }
+    input.err   { border-color: #f85149; }
+    .field-hint { font-size: 11px; color: #8b949e; margin-top: 5px; }
+    .field-err  { font-size: 11px; color: #f85149; margin-top: 5px; display: none; }
+    .row { display: flex; gap: 12px; }
+    .row .field { flex: 1; }
+    .btn-go { width: 100%; background: #238636; color: #fff; border: none; border-radius: 8px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: background .15s; }
+    .btn-go:hover { background: #2ea043; }
+
+    /* progress */
+    .prog-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #21262d; }
+    .prog-row:last-child { border-bottom: none; }
+    .prog-icon { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .pi-wait { background: #21262d; color: #484f58; }
+    .pi-run  { background: #388bfd; color: #fff; animation: rot 1.2s linear infinite; }
+    .pi-done { background: #238636; color: #fff; }
+    .pi-err  { background: #da3633; color: #fff; }
+    @keyframes rot { to { transform: rotate(360deg); } }
+    .prog-text { font-size: 13px; color: #8b949e; }
+    .prog-text.done { color: #e6edf3; }
+
+    /* result */
+    .result-headline { font-size: 26px; font-weight: 800; color: #f0f6fc; margin-bottom: 6px; }
+    .result-sub { font-size: 13px; color: #8b949e; margin-bottom: 20px; line-height: 1.5; }
+    .link-card { display: flex; align-items: center; justify-content: space-between; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; text-decoration: none; transition: border-color .15s; }
+    .link-card:hover { border-color: #8b949e44; }
+    .lc-label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: #484f58; font-weight: 600; }
+    .lc-url   { font-size: 12px; font-family: monospace; color: #58a6ff; }
+    .lc-arr   { color: #484f58; font-size: 14px; }
+    .btn-reset { width: 100%; background: none; border: 1px solid #30363d; color: #8b949e; border-radius: 8px; padding: 10px; font-size: 13px; cursor: pointer; margin-top: 10px; }
+    .btn-reset:hover { background: #1c2128; color: #e6edf3; }
+
+    /* table */
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+    .section-title { font-size: 18px; font-weight: 700; color: #f0f6fc; }
+    .section-count { font-size: 13px; color: #8b949e; }
+    .table-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #161b22; color: #8b949e; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 12px 18px; text-align: left; border-bottom: 1px solid #30363d; }
+    td { padding: 13px 18px; font-size: 13px; border-bottom: 1px solid #21262d; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    .app-name { font-weight: 700; color: #f0f6fc; font-family: monospace; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .dg { background: #3fb950; box-shadow: 0 0 5px #3fb95044; }
+    .dy { background: #d29922; }
+    .dr { background: #f85149; }
+    .dm { background: #484f58; }
+    .env-cell { display: flex; align-items: center; color: #8b949e; }
+    .links { display: flex; flex-wrap: wrap; gap: 6px; }
+    .lnk { display: inline-block; padding: 4px 9px; border-radius: 5px; font-size: 11px; font-weight: 600; text-decoration: none; border: 1px solid; }
+    .lnk:hover { opacity: .7; }
+    .lb { color: #79c0ff; border-color: #1f6feb44; background: #1f6feb14; }
+    .lg { color: #56d364; border-color: #2ea04344; background: #2ea04314; }
+    .lo { color: #ffa657; border-color: #d2992244; background: #d2992214; }
+    .lp { color: #d2a8ff; border-color: #8957e544; background: #8957e514; }
+    .lt { color: #39d353; border-color: #39d35344; background: #39d35314; }
+    .empty { color: #8b949e; font-size: 14px; padding: 40px 18px; text-align: center; }
+
+    @media(max-width:720px){ .wizard-wrap{grid-template-columns:1fr} .wizard-pitch{display:none} }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#1f6feb"/><path d="M8 16L14 10L20 16L14 22Z" fill="white" opacity=".7"/><path d="M14 16L20 10L26 16L20 22Z" fill="white"/></svg>
+  <span class="logo-name">EasyDeploy</span>
+  <span class="logo-tag">developer portal</span>
+</header>
+
+<main>
+  <div class="wizard-wrap">
+    <!-- Left: pitch -->
+    <div class="wizard-pitch">
+      <div class="pitch-kicker">Ship in minutes, not days</div>
+      <div class="pitch-headline">One file.<br/><em>Everything</em><br/>is handled.</div>
+      <ul class="pitch-list">
+        <li>HTTPS endpoints for dev &amp; prod</li>
+        <li>Secrets vault, isolated per app</li>
+        <li>Grafana dashboard, day one</li>
+        <li>GitOps — push to deploy</li>
+        <li>Deploy notifications</li>
+      </ul>
+    </div>
+
+    <!-- Right: wizard -->
+    <div class="wizard-right">
+      <div class="step-dots">
+        <div class="step-dot active" id="d0"></div>
+        <div class="step-dot" id="d1"></div>
+        <div class="step-dot" id="d2"></div>
+      </div>
+
+      <!-- Form -->
+      <div class="pane active" id="pane-form">
+        <div class="pane-label">New app</div>
+        <div class="pane-title">What are you building?</div>
+        <div class="field">
+          <label>App name</label>
+          <input id="f-name" type="text" placeholder="my-cool-app" autocomplete="off" oninput="onName()" />
+          <div class="field-hint">Lowercase, hyphens ok, at least 5 chars</div>
+          <div class="field-err" id="name-err"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Team</label><input id="f-team" type="text" value="easy-deploy" /></div>
+          <div class="field"><label>Port</label><input id="f-port" type="number" value="3000" min="1" max="65535" /></div>
+        </div>
+        <button class="btn-go" onclick="startCreate()">Create &amp; deploy →</button>
+      </div>
+
+      <!-- Progress -->
+      <div class="pane" id="pane-prog">
+        <div class="pane-label">Deploying</div>
+        <div class="pane-title" id="prog-title">Setting things up…</div>
+        <div id="prog-list"></div>
+      </div>
+
+      <!-- Result -->
+      <div class="pane" id="pane-result">
+        <div class="result-headline" id="r-head"></div>
+        <div class="result-sub">Build takes ~2 min. Watch it appear in the table below.</div>
+        <div id="r-links"></div>
+        <button class="btn-reset" onclick="reset()">Deploy another app</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Apps table -->
+  <section>
+    <div class="section-head">
+      <span class="section-title">Running apps</span>
+      <span class="section-count" id="app-count"></span>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead><tr><th>App</th><th>Dev</th><th>Prod</th><th>Links</th></tr></thead>
+        <tbody id="tbody"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+const STEPS = {
+  create_repo: 'Create GitHub repository',
+  wait_init:   'Initialise repository',
+  configure:   'Write app.yaml and trigger deploy',
+  set_secret:  'Provision deploy credentials',
+}
+let appName = ''
+
+function dot(i, s) {
+  document.getElementById('d'+i).className = 'step-dot'+(s?' '+s:'')
+}
+function pane(id) {
+  ;['pane-form','pane-prog','pane-result'].forEach(p=>document.getElementById(p).classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+}
+
+function onName() {
+  const v = document.getElementById('f-name').value
+  const err = document.getElementById('name-err')
+  const inp = document.getElementById('f-name')
+  if (v && !/^[a-z][a-z0-9-]{4,}$/.test(v)) {
+    err.textContent = 'Start with a letter, lowercase, at least 5 chars'
+    err.style.display = ''
+    inp.classList.add('err')
+  } else { err.style.display='none'; inp.classList.remove('err') }
+}
+
+function reset() {
+  dot(0,'active'); dot(1,''); dot(2,'')
+  pane('pane-form')
+  document.getElementById('f-name').value=''
+  document.getElementById('f-name').classList.remove('err')
+  document.getElementById('name-err').style.display='none'
+}
+
+async function startCreate() {
+  const name = document.getElementById('f-name').value.trim()
+  const team = document.getElementById('f-team').value.trim()||'easy-deploy'
+  const port = parseInt(document.getElementById('f-port').value)||3000
+  if (!name) { document.getElementById('f-name').focus(); return }
+  if (!/^[a-z][a-z0-9-]{4,}$/.test(name)) { onName(); return }
+  appName = name
+  dot(0,'done'); dot(1,'active'); dot(2,'')
+  pane('pane-prog')
+  document.getElementById('prog-title').textContent = 'Deploying '+name+'…'
+
+  const list = document.getElementById('prog-list')
+  list.innerHTML = ''
+  const rows = {}
+
+  function mkRow(key) {
+    if (rows[key]) return
+    const d = document.createElement('div')
+    d.className = 'prog-row'
+    d.innerHTML = `<div class="prog-icon pi-wait" id="pi-${key}">○</div><div class="prog-text" id="pt-${key}">${STEPS[key]??key}</div>`
+    list.appendChild(d)
+    rows[key] = d
+  }
+  Object.keys(STEPS).forEach(mkRow)
+
+  function upd(key, status, msg) {
+    mkRow(key)
+    const icon = document.getElementById('pi-'+key)
+    const text = document.getElementById('pt-'+key)
+    const m = {running:['pi-run','↻'],done:['pi-done','✓'],error:['pi-err','✗']}
+    const [cls,ch] = m[status]??['pi-wait','○']
+    icon.className='prog-icon '+cls; icon.textContent=ch
+    if (msg){text.textContent=msg; text.className='prog-text'+(status==='done'?' done':'')}
+  }
+
+  try {
+    const res = await fetch('/api/create-app',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,team,port})})
+    if (!res.ok){const e=await res.json(); throw new Error(e.error??'Server error')}
+    const reader=res.body.getReader(), dec=new TextDecoder()
+    let buf='', result=null
+    while(true){
+      const {done,value}=await reader.read()
+      if(done) break
+      buf+=dec.decode(value,{stream:true})
+      const lines=buf.split('\n'); buf=lines.pop()
+      for(const line of lines){
+        if(!line.startsWith('data: ')) continue
+        const evt=JSON.parse(line.slice(6))
+        if(evt.error) throw new Error(evt.error)
+        if(evt.done){result=evt;continue}
+        upd(evt.step,evt.status,evt.message)
+      }
+    }
+    if(!result) throw new Error('No result')
+    showResult(result)
+  } catch(e) {
+    list.innerHTML+=`<div style="color:#f85149;font-size:13px;padding:12px 0">❌ ${e.message}</div>`
+  }
+}
+
+function showResult(r) {
+  dot(1,'done'); dot(2,'active')
+  pane('pane-result')
+  document.getElementById('r-head').textContent=appName+' is deploying 🚀'
+  const links=[['GitHub repo',r.repo],['Actions (live log)',r.actions_url],['Dev URL (ready in ~2min)',r.dev_url],['ArgoCD',r.argocd_url],['Grafana',r.grafana_url]]
+  document.getElementById('r-links').innerHTML=links.map(([l,u])=>`
+    <a class="link-card" href="${u}" target="_blank">
+      <div><div class="lc-label">${l}</div><div class="lc-url">${u.replace('https://','')}</div></div>
+      <span class="lc-arr">↗</span>
+    </a>`).join('')
+  loadApps()
+}
+
+/* table */
+function hdot(h){return`<span class="dot ${h==='Healthy'?'dg':h==='Progressing'?'dy':h==='Degraded'?'dr':'dm'}"></span>`}
+function eCell(e){return e?`<div class="env-cell">${hdot(e.health)}${e.health}</div>`:'<span style="color:#484f58">—</span>'}
+
+async function loadApps(){
+  const tb=document.getElementById('tbody')
+  try{
+    const apps=await fetch('/api/apps').then(r=>r.json())
+    if(!Array.isArray(apps)||!apps.length){tb.innerHTML='<tr><td colspan="4" class="empty">No apps yet.</td></tr>';document.getElementById('app-count').textContent='';return}
+    document.getElementById('app-count').textContent=apps.length+' app'+(apps.length!==1?'s':'')
+    tb.innerHTML=apps.map(a=>`<tr>
+      <td class="app-name">${a.name}</td>
+      <td>${eCell(a.dev)}</td>
+      <td>${eCell(a.prod)}</td>
+      <td><div class="links">
+        <a class="lnk lb" href="${a.links.dev}" target="_blank">Dev</a>
+        <a class="lnk lg" href="${a.links.prod}" target="_blank">Prod</a>
+        <a class="lnk lo" href="${a.links.argocd}" target="_blank">ArgoCD</a>
+        <a class="lnk lp" href="${a.links.grafana}" target="_blank">Grafana</a>
+        <a class="lnk lt" href="${a.links.infisical}" target="_blank">Infisical</a>
+      </div></td>
+    </tr>`).join('')
+  }catch(e){tb.innerHTML=`<tr><td colspan="4" class="empty" style="color:#f85149">Error: ${e}</td></tr>`}
+}
+
+document.getElementById('f-name').addEventListener('keydown',e=>{if(e.key==='Enter')startCreate()})
+loadApps()
+setInterval(loadApps,15000)
+</script>
+</body>
+</html>
