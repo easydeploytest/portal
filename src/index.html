@@ -211,11 +211,14 @@
     .notif-item { padding: 14px 20px; border-bottom: 1px solid #F5F7FE; cursor: default; transition: background .12s; }
     .notif-item:hover { background: var(--bg); }
     .notif-item.unread { border-left: 3px solid var(--primary); padding-left: 17px; }
-    .ni-title { font-weight: 600; color: var(--text); font-size: 14px; margin-bottom: 3px; }
-    .ni-body  { font-size: 13px; color: var(--text-secondary); line-height: 1.45; word-break: break-all; }
-    .ni-time  { font-size: 11px; color: var(--primary-muted); margin-top: 5px; }
-    .ni-tags  { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+    .ni-title { font-weight: 600; color: var(--text); font-size: 14px; margin-bottom: 4px; }
+    .ni-body  { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    .ni-time  { font-size: 11px; color: var(--primary-muted); margin-top: 6px; }
+    .ni-tags  { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 7px; }
     .ni-tag   { background: var(--primary-light); color: var(--primary); border-radius: 10px; padding: 1px 8px; font-size: 11px; font-weight: 600; }
+    .ni-links { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .ni-link  { font-size: 12px; font-weight: 700; font-family: var(--font-h); letter-spacing: .6px; text-transform: uppercase; color: var(--primary); text-decoration: none; padding: 3px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); transition: background .12s; white-space: nowrap; }
+    .ni-link:hover { background: var(--primary-light); border-color: var(--primary); }
     .notif-empty { padding: 56px 20px; text-align: center; color: var(--primary-muted); }
     .notif-empty-icon { font-size: 36px; margin-bottom: 10px; opacity: .5; }
 
@@ -570,11 +573,17 @@ function addNotif(n, isNew=false) {
   const list = document.getElementById('notif-list')
   const empty = list.querySelector('.notif-empty')
   if (empty) empty.remove()
-  const tags = (n.tags??[]).map(t => `<span class="ni-tag">${t}</span>`).join('')
+  const tags  = (n.tags??[]).map(t => `<span class="ni-tag">${t}</span>`).join('')
+  const links = (n.links??[]).map(l => `<a class="ni-link" href="${l.url}" target="_blank">${l.label} ›</a>`).join('')
   const el = document.createElement('div')
   el.className = 'notif-item'+(isNew&&!panelOpen?' unread':'')
   el.id = 'n-'+n.id
-  el.innerHTML = `<div class="ni-title">${n.title}</div><div class="ni-body">${n.body}</div>${tags?`<div class="ni-tags">${tags}</div>`:''}<div class="ni-time">${relTime(n.ts)}</div>`
+  el.innerHTML = `
+    <div class="ni-title">${n.title}</div>
+    <div class="ni-body">${n.body}</div>
+    ${tags  ? `<div class="ni-tags">${tags}</div>`   : ''}
+    ${links ? `<div class="ni-links">${links}</div>` : ''}
+    <div class="ni-time">${relTime(n.ts)}</div>`
   list.prepend(el)
   if (isNew && !panelOpen) {
     unread++

@@ -19,10 +19,11 @@ type AppEnv = { health: string; sync: string }
 // ── Notifications ────────────────────────────────────────────────────────────
 export type Notification = {
   id:    string
-  ts:    number      // epoch ms
+  ts:    number
   title: string
   body:  string
   tags?: string[]
+  links?: { label: string; url: string }[]
 }
 
 const MAX_STORED = 100
@@ -170,11 +171,18 @@ new Elysia()
   // Receive a notification (called by EasyDeploy workflows or any tooling)
   .post('/api/notify',
     ({ body }) => {
-      const { title, body: text, tags } = body as any
-      const n = pushNotification({ title, body: text, tags })
+      const { title, body: text, tags, links } = body as any
+      const n = pushNotification({ title, body: text, tags, links })
       return { ok: true, id: n.id }
     },
-    { body: t.Object({ title: t.String(), body: t.String(), tags: t.Optional(t.Array(t.String())) }) }
+    {
+      body: t.Object({
+        title: t.String(),
+        body:  t.String(),
+        tags:  t.Optional(t.Array(t.String())),
+        links: t.Optional(t.Array(t.Object({ label: t.String(), url: t.String() }))),
+      })
+    }
   )
 
   // Recent notifications (REST fallback)
