@@ -176,6 +176,72 @@
 
     /* error */
     .err-bar { background: #FFF0F3; border: 1px solid #F50057; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #c0003a; margin-top: 10px; }
+
+    /* ── Notification bell ── */
+    .notif-btn {
+      position: relative; background: none; border: none; cursor: pointer;
+      color: var(--color-primary-muted); padding: 0; display: flex;
+      align-items: center; justify-content: center;
+      width: 72px; height: 48px; transition: color .15s;
+    }
+    .notif-btn:hover { color: #fff; }
+    .notif-badge {
+      position: absolute; top: 10px; right: 14px;
+      background: #F50057; color: #fff;
+      font-size: 10px; font-weight: 700;
+      min-width: 16px; height: 16px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 3px; pointer-events: none;
+    }
+    .notif-badge.hidden { display: none; }
+
+    .notif-panel {
+      position: fixed; top: 0; left: 224px;
+      width: 360px; height: 100vh;
+      background: var(--color-bg-white);
+      box-shadow: 4px 0 24px rgba(9,34,65,.12);
+      z-index: 200; display: flex; flex-direction: column;
+      transform: translateX(-110%); transition: transform .25s ease;
+    }
+    .notif-panel.open { transform: translateX(0); }
+
+    .notif-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 20px 16px; border-bottom: 1px solid #EFF2FB; flex-shrink: 0;
+    }
+    .notif-panel-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text-primary); }
+    .notif-close-btn { background: none; border: none; cursor: pointer; color: var(--color-primary-muted); font-size: 20px; line-height: 1; padding: 4px; }
+    .notif-close-btn:hover { color: var(--color-text-primary); }
+
+    .notif-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+    .notif-item {
+      padding: 14px 20px; border-bottom: 1px solid #F5F7FE; cursor: default;
+      transition: background .15s;
+    }
+    .notif-item:hover { background: var(--color-bg-page); }
+    .notif-item.unread { border-left: 3px solid var(--color-primary); padding-left: 17px; }
+    .notif-item-title { font-weight: 600; color: var(--color-text-primary); margin-bottom: 3px; font-size: 14px; }
+    .notif-item-body  { font-size: 13px; color: var(--color-text-secondary); line-height: 1.45; }
+    .notif-item-time  { font-size: 11px; color: var(--color-primary-muted); margin-top: 5px; }
+    .notif-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+    .notif-tag { background: var(--color-primary-light); color: var(--color-primary); border-radius: 10px; padding: 1px 8px; font-size: 11px; font-weight: 600; }
+
+    .notif-empty { padding: 48px 20px; text-align: center; color: var(--color-primary-muted); }
+    .notif-empty-icon { font-size: 32px; margin-bottom: 10px; opacity: .5; }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 400; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast {
+      background: var(--color-bg-white); border-left: 4px solid var(--color-primary);
+      border-radius: 8px; padding: 12px 16px; min-width: 280px; max-width: 360px;
+      box-shadow: 0 4px 20px rgba(9,34,65,.15);
+      animation: slideIn .25s ease; pointer-events: all;
+    }
+    .toast-title { font-weight: 600; color: var(--color-text-primary); font-size: 14px; }
+    .toast-body  { font-size: 13px; color: var(--color-text-secondary); margin-top: 3px; }
+    @keyframes slideIn { from { transform: translateX(110%); opacity:0 } to { transform: translateX(0); opacity:1 } }
+    @keyframes slideOut { to { transform: translateX(110%); opacity:0 } }
+    .toast.hiding { animation: slideOut .2s ease forwards; }
   </style>
 </head>
 <body>
@@ -210,6 +276,13 @@
   </nav>
   <div class="sidebar-bottom">
     <hr class="sidebar-divider">
+    <button class="sidebar-nav-link notif-btn" onclick="toggleNotifPanel()" id="notif-btn" title="Notifications">
+      <div class="sidebar-nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 0 0-6 6v3l-1.5 2.5A1 1 0 0 0 3.5 15h13a1 1 0 0 0 .85-1.53L16 11V8a6 6 0 0 0-6-6zm0 16a2 2 0 0 0 2-2H8a2 2 0 0 0 2 2z"/></svg>
+        <span class="notif-badge hidden" id="notif-badge">0</span>
+      </div>
+      <span class="sidebar-nav-label">Notifications</span>
+    </button>
     <a class="sidebar-nav-link" href="https://github.com/easydeploytest" target="_blank">
       <div class="sidebar-nav-icon">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.667A8.333 8.333 0 0 0 1.667 10c0 3.682 2.387 6.805 5.698 7.907.416.077.57-.18.57-.4v-1.4c-2.317.503-2.806-1.117-2.806-1.117-.378-.962-.924-1.218-.924-1.218-.755-.517.057-.506.057-.506.835.059 1.274.858 1.274.858.742 1.27 1.947.903 2.422.691.075-.537.29-.903.528-1.11-1.85-.21-3.795-.925-3.795-4.116 0-.909.325-1.652.858-2.234-.086-.21-.372-1.057.081-2.204 0 0 .7-.224 2.292.854A7.97 7.97 0 0 1 10 5.5c.709.003 1.422.096 2.088.281 1.59-1.078 2.29-.854 2.29-.854.453 1.147.168 1.994.082 2.204.534.582.857 1.325.857 2.234 0 3.2-1.949 3.904-3.804 4.11.3.257.566.766.566 1.544v2.289c0 .222.152.48.574.399A8.335 8.335 0 0 0 18.333 10 8.333 8.333 0 0 0 10 1.667z"/></svg>
@@ -224,6 +297,20 @@
     </a>
   </div>
 </nav>
+
+<!-- ── Notification panel ── -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-panel-header">
+    <span class="notif-panel-title">Notifications</span>
+    <button class="notif-close-btn" onclick="toggleNotifPanel()">×</button>
+  </div>
+  <div class="notif-list" id="notif-list">
+    <div class="notif-empty"><div class="notif-empty-icon">🔔</div><p>No notifications yet</p></div>
+  </div>
+</div>
+
+<!-- ── Toast container ── -->
+<div class="toast-container" id="toast-container"></div>
 
 <!-- ── Main ── -->
 <div class="app-root">
@@ -485,6 +572,96 @@ async function loadApps() {
 document.getElementById('f-name').addEventListener('keydown', e => { if (e.key === 'Enter') startCreate() })
 loadApps()
 setInterval(loadApps, 15000)
+
+/* ── Notifications ── */
+let unreadCount = 0
+let notifPanelOpen = false
+const seenIds = new Set()
+
+function relTime(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000)
+  if (s < 60)  return 'just now'
+  if (s < 3600) return Math.floor(s/60) + 'm ago'
+  if (s < 86400) return Math.floor(s/3600) + 'h ago'
+  return new Date(ts).toLocaleDateString()
+}
+
+function renderNotification(n, isNew = false) {
+  const tags = (n.tags ?? []).map(t => `<span class="notif-tag">${t}</span>`).join('')
+  const div = document.createElement('div')
+  div.className = 'notif-item' + (isNew ? ' unread' : '')
+  div.id = 'notif-' + n.id
+  div.innerHTML = `
+    <div class="notif-item-title">${n.title}</div>
+    <div class="notif-item-body">${n.body}</div>
+    ${tags ? `<div class="notif-tags">${tags}</div>` : ''}
+    <div class="notif-item-time">${relTime(n.ts)}</div>`
+  return div
+}
+
+function addNotification(n, isNew = false) {
+  if (seenIds.has(n.id)) return
+  seenIds.add(n.id)
+
+  const list = document.getElementById('notif-list')
+  // remove empty state
+  const empty = list.querySelector('.notif-empty')
+  if (empty) empty.remove()
+
+  list.prepend(renderNotification(n, isNew))
+
+  if (isNew) {
+    if (!notifPanelOpen) {
+      unreadCount++
+      const badge = document.getElementById('notif-badge')
+      badge.textContent = unreadCount > 99 ? '99+' : unreadCount
+      badge.classList.remove('hidden')
+      document.getElementById('notif-btn').style.color = '#fff'
+    }
+    showToast(n)
+  }
+}
+
+function showToast(n) {
+  const container = document.getElementById('toast-container')
+  const t = document.createElement('div')
+  t.className = 'toast'
+  t.innerHTML = `<div class="toast-title">${n.title}</div><div class="toast-body">${n.body}</div>`
+  container.appendChild(t)
+  setTimeout(() => {
+    t.classList.add('hiding')
+    t.addEventListener('animationend', () => t.remove())
+  }, 5000)
+}
+
+function toggleNotifPanel() {
+  notifPanelOpen = !notifPanelOpen
+  document.getElementById('notif-panel').classList.toggle('open', notifPanelOpen)
+  if (notifPanelOpen) {
+    unreadCount = 0
+    document.getElementById('notif-badge').classList.add('hidden')
+    // remove unread highlights
+    document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'))
+  }
+}
+
+function connectEvents() {
+  const es = new EventSource('/api/events')
+  es.onmessage = e => {
+    const msg = JSON.parse(e.data)
+    if (msg.type === 'catchup') {
+      msg.notifications.forEach(n => addNotification(n, false))
+    } else if (msg.type === 'notification') {
+      addNotification(msg.notification, true)
+    }
+  }
+  es.onerror = () => {
+    es.close()
+    setTimeout(connectEvents, 5000)  // reconnect
+  }
+}
+
+connectEvents()
 </script>
 </body>
 </html>

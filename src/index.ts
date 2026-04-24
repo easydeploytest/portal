@@ -16,6 +16,31 @@ const TEMPLATE_REPO   = 'template'
 
 type AppEnv = { health: string; sync: string }
 
+// ── Notifications ────────────────────────────────────────────────────────────
+export type Notification = {
+  id:    string
+  ts:    number      // epoch ms
+  title: string
+  body:  string
+  tags?: string[]
+}
+
+const MAX_STORED = 100
+const notifications: Notification[] = []
+const sseClients = new Set<ReadableStreamDefaultController>()
+
+function pushNotification(n: Omit<Notification, 'id' | 'ts'>): Notification {
+  const notif: Notification = { id: crypto.randomUUID(), ts: Date.now(), ...n }
+  notifications.push(notif)
+  if (notifications.length > MAX_STORED) notifications.shift()
+  const payload = `data: ${JSON.stringify({ type: 'notification', notification: notif })}\n\n`
+  const encoded = new TextEncoder().encode(payload)
+  for (const ctrl of sseClients) {
+    try { ctrl.enqueue(encoded) } catch { sseClients.delete(ctrl) }
+  }
+  return notif
+}
+
 // ── ArgoCD ──────────────────────────────────────────────────────────────────
 let argoToken: string | null = null
 
@@ -117,6 +142,44 @@ new Elysia()
   .get('/', () => new Response(html, { headers: { 'Content-Type': 'text/html' } }))
   .get('/healthz', () => ({ status: 'ok' }))
 
+  // Live notification stream — frontend subscribes once on load
+  .get('/api/events', () => {
+    const encoder = new TextEncoder()
+    let ctrl: ReadableStreamDefaultController
+    const stream = new ReadableStream({
+      start(controller) {
+        ctrl = controller
+        sseClients.add(ctrl)
+        // send recent notifications on connect so the page catches up
+        const catchup = JSON.stringify({ type: 'catchup', notifications: notifications.slice(-20) })
+        ctrl.enqueue(encoder.encode(`data: ${catchup}\n\n`))
+      },
+      cancel() {
+        sseClients.delete(ctrl)
+      },
+    })
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    })
+  })
+
+  // Receive a notification (called by EasyDeploy workflows or any tooling)
+  .post('/api/notify',
+    ({ body }) => {
+      const { title, body: text, tags } = body as any
+      const n = pushNotification({ title, body: text, tags })
+      return { ok: true, id: n.id }
+    },
+    { body: t.Object({ title: t.String(), body: t.String(), tags: t.Optional(t.Array(t.String())) }) }
+  )
+
+  // Recent notifications (REST fallback)
+  .get('/api/notifications', () => notifications.slice().reverse())
+
   // List deployed apps from ArgoCD
   .get('/api/apps', async () => {
     try { return await fetchApps() }
@@ -130,11 +193,6 @@ new Elysia()
    * Returns an SSE stream so callers (humans, AI agents, curl) see live progress.
    *
    * Body: { name: string, team?: string, port?: number }
-   *
-   * Example:
-   *   curl -N -X POST https://portal-dev.../api/create-app \
-   *     -H "Content-Type: application/json" \
-   *     -d '{"name":"my-app","team":"easy-deploy","port":3000}'
    *
    * Each SSE event: { step, message, status: "running"|"done"|"error" }
    * Final event:    { done: true, repo, dev_url, prod_url, actions_url }
@@ -204,7 +262,7 @@ new Elysia()
         send({ step: 'set_secret', message: 'GH_PAT secret set — repo is fully autonomous', status: 'done' })
 
         // ── Done ─────────────────────────────────────────────────────────────
-        send({
+        const result = {
           done: true,
           repo:        `https://github.com/${repoFull}`,
           actions_url: `https://github.com/${repoFull}/actions`,
@@ -212,6 +270,14 @@ new Elysia()
           prod_url:    `https://${name}.easy-deploy.${CLUSTER_IP}.nip.io`,
           argocd_url:  `${ARGOCD_URL}/applications/${name}-dev`,
           grafana_url: `${GRAFANA_URL}/d/easydeploy-${name}/${name}`,
+        }
+        send(result)
+
+        // also push a portal notification so other browser tabs see it
+        pushNotification({
+          title: `${name} deployed`,
+          body: `Dev: ${result.dev_url}`,
+          tags: ['deploy', 'success'],
         })
       })
     },
