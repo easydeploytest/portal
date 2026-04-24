@@ -3,234 +3,354 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EasyDeploy</title>
+  <title>EasyDeploy Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Red+Hat+Display:wght@700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --color-primary:        #1456E0;
+      --color-primary-dark:   #0D2497;
+      --color-primary-light:  #E7EEFC;
+      --color-primary-muted:  #A1BCF3;
+      --color-text-primary:   #092241;
+      --color-text-secondary: rgba(9,34,65,.8);
+      --color-bg-page:        #F5F7FE;
+      --color-bg-white:       #FFFFFF;
+      --color-divider:        rgba(255,255,255,.2);
+      --font-display: 'Red Hat Display', sans-serif;
+      --font-body:    'Open Sans', sans-serif;
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+    body { font-family: var(--font-body); background: var(--color-bg-page); color: var(--color-text-primary); font-size: 14px; line-height: 20px; }
 
-    header { background: #161b22; border-bottom: 1px solid #30363d; padding: 14px 40px; display: flex; align-items: center; gap: 12px; }
-    header svg { width: 26px; height: 26px; }
-    .logo-name { font-size: 16px; font-weight: 700; color: #f0f6fc; }
-    .logo-tag  { font-size: 12px; color: #8b949e; }
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: 224px; height: 100vh;
+      background: linear-gradient(0deg, #0D2497 0%, #1456E0 100%);
+      display: flex; flex-direction: column; align-items: flex-start;
+      z-index: 100; overflow-y: auto;
+    }
+    .sidebar-logo {
+      height: 96px; display: flex; align-items: center;
+      padding: 0 24px; width: 100%; gap: 10px; flex-shrink: 0;
+    }
+    .sidebar-logo svg { width: 30px; height: 30px; flex-shrink: 0; }
+    .sidebar-logo-text { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: #fff; }
+    .sidebar-logo-sub  { font-size: 11px; color: var(--color-primary-muted); margin-top: 1px; }
+    .sidebar-divider   { width: 100%; height: 1px; background: var(--color-divider); border: none; flex-shrink: 0; }
+    .sidebar-nav { width: 100%; flex: 1; }
+    .sidebar-nav-link {
+      display: flex; align-items: center;
+      width: 224px; height: 48px;
+      color: var(--color-primary-muted);
+      text-decoration: none; font-size: 14px; font-weight: 400;
+      font-family: var(--font-body); transition: color .15s;
+    }
+    .sidebar-nav-link:hover { color: #fff; }
+    .sidebar-nav-link.active { color: #fff; }
+    .sidebar-nav-icon { width: 72px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sidebar-nav-label { flex: 1; }
+    .sidebar-bottom { margin-top: auto; width: 100%; padding-bottom: 8px; }
 
-    main { max-width: 1000px; margin: 0 auto; padding: 56px 24px; display: flex; flex-direction: column; gap: 64px; }
+    /* ── Main layout ── */
+    .app-root { padding-left: 224px; min-height: 100vh; }
+    main { display: block; width: 100%; }
 
-    /* wizard card */
-    .wizard-wrap { display: grid; grid-template-columns: 1fr 1fr; background: #161b22; border: 1px solid #30363d; border-radius: 14px; overflow: hidden; min-height: 380px; }
+    .page-header { padding: 24px 24px 8px 24px; }
+    h1 { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1.17; color: var(--color-text-primary); }
+    .page-subtitle { font-size: 14px; font-weight: 500; line-height: 20px; color: var(--color-text-secondary); display: inline-block; margin-top: 8px; }
 
-    .wizard-pitch { padding: 48px 44px; background: linear-gradient(140deg,#0d2048,#0d1117); border-right: 1px solid #30363d; display: flex; flex-direction: column; justify-content: center; }
-    .pitch-kicker { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #388bfd; margin-bottom: 14px; }
-    .pitch-headline { font-size: 36px; font-weight: 800; line-height: 1.1; color: #f0f6fc; margin-bottom: 22px; }
-    .pitch-headline em { font-style: normal; color: #388bfd; }
-    .pitch-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .pitch-list li { font-size: 13px; color: #8b949e; display: flex; align-items: center; gap: 10px; }
-    .pitch-list li::before { content: '✓'; color: #3fb950; font-weight: 700; flex-shrink: 0; }
+    .page-article { padding: 24px; }
+    .content-layout { display: flex; flex-direction: row; gap: 24px; align-items: flex-start; }
 
-    .wizard-right { padding: 48px 44px; display: flex; flex-direction: column; justify-content: center; }
+    /* ── Wizard panel (left, like filter panel) ── */
+    .wizard-panel { width: 320px; min-width: 320px; background: var(--color-bg-white); border-radius: 20px; padding: 20px; flex-shrink: 0; }
+    .wizard-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .wizard-panel-title { font-size: 16px; font-weight: 600; color: var(--color-text-primary); letter-spacing: .15px; }
 
-    .step-dots { display: flex; gap: 6px; margin-bottom: 32px; }
-    .step-dot { height: 3px; border-radius: 2px; flex: 1; background: #30363d; transition: background .3s; }
-    .step-dot.active { background: #388bfd; }
-    .step-dot.done   { background: #238636; }
+    .step-dots { display: flex; gap: 6px; margin-bottom: 18px; }
+    .step-dot { height: 3px; border-radius: 2px; flex: 1; background: var(--color-primary-light); transition: background .3s; }
+    .step-dot.active { background: var(--color-primary); }
+    .step-dot.done   { background: #3fb950; }
 
     .pane { display: none; }
     .pane.active { display: block; }
-    .pane-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8b949e; margin-bottom: 8px; }
-    .pane-title { font-size: 22px; font-weight: 700; color: #f0f6fc; margin-bottom: 28px; }
 
-    /* form */
-    .field { margin-bottom: 16px; }
-    label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8b949e; margin-bottom: 6px; }
-    input { width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 11px 14px; font-size: 15px; color: #f0f6fc; outline: none; transition: border-color .15s; }
-    input::placeholder { color: #484f58; }
-    input:focus { border-color: #388bfd; }
-    input.err   { border-color: #f85149; }
-    .field-hint { font-size: 11px; color: #8b949e; margin-top: 5px; }
-    .field-err  { font-size: 11px; color: #f85149; margin-top: 5px; display: none; }
-    .row { display: flex; gap: 12px; }
-    .row .field { flex: 1; }
-    .btn-go { width: 100%; background: #238636; color: #fff; border: none; border-radius: 8px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: background .15s; }
-    .btn-go:hover { background: #2ea043; }
+    /* form fields */
+    .field { margin-bottom: 14px; }
+    .field-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 5px; }
+    input[type=text], input[type=number] {
+      width: 100%; background: var(--color-bg-page); border: 1px solid #D0DAF5;
+      border-radius: 8px; padding: 9px 12px; font-size: 14px;
+      font-family: var(--font-body); color: var(--color-text-primary);
+      outline: none; transition: border-color .15s;
+    }
+    input:focus { border-color: var(--color-primary); }
+    input.err   { border-color: #F50057; }
+    input::placeholder { color: var(--color-primary-muted); }
+    .field-hint { font-size: 11px; color: var(--color-text-secondary); margin-top: 4px; opacity: .7; }
+    .field-err  { font-size: 11px; color: #F50057; margin-top: 4px; display: none; }
+    .row-2 { display: flex; gap: 10px; }
+    .row-2 .field { flex: 1; }
+
+    .btn-primary {
+      width: 100%; background: var(--color-primary); color: #fff; border: none;
+      border-radius: 6px; padding: 11px; font-family: var(--font-display);
+      font-size: 14px; font-weight: 700; letter-spacing: 1.25px;
+      text-transform: uppercase; cursor: pointer; margin-top: 4px; transition: background .15s;
+    }
+    .btn-primary:hover { background: var(--color-primary-dark); }
 
     /* progress */
-    .prog-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #21262d; }
+    .prog-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--color-text-secondary); margin-bottom: 14px; }
+    .prog-row { display: flex; align-items: flex-start; gap: 12px; padding: 9px 0; border-bottom: 1px solid #F0F3FD; }
     .prog-row:last-child { border-bottom: none; }
-    .prog-icon { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
-    .pi-wait { background: #21262d; color: #484f58; }
-    .pi-run  { background: #388bfd; color: #fff; animation: rot 1.2s linear infinite; }
-    .pi-done { background: #238636; color: #fff; }
-    .pi-err  { background: #da3633; color: #fff; }
+    .prog-icon { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
+    .pi-wait { background: var(--color-primary-light); color: var(--color-primary-muted); }
+    .pi-run  { background: var(--color-primary); color: #fff; animation: rot 1.2s linear infinite; }
+    .pi-done { background: #3fb950; color: #fff; }
+    .pi-err  { background: #F50057; color: #fff; }
     @keyframes rot { to { transform: rotate(360deg); } }
-    .prog-text { font-size: 13px; color: #8b949e; }
-    .prog-text.done { color: #e6edf3; }
+    .prog-text { font-size: 13px; color: var(--color-text-secondary); line-height: 1.45; flex: 1; }
+    .prog-text.done { color: var(--color-text-primary); font-weight: 500; }
 
     /* result */
-    .result-headline { font-size: 26px; font-weight: 800; color: #f0f6fc; margin-bottom: 6px; }
-    .result-sub { font-size: 13px; color: #8b949e; margin-bottom: 20px; line-height: 1.5; }
-    .link-card { display: flex; align-items: center; justify-content: space-between; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; text-decoration: none; transition: border-color .15s; }
-    .link-card:hover { border-color: #8b949e44; }
-    .lc-label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: #484f58; font-weight: 600; }
-    .lc-url   { font-size: 12px; font-family: monospace; color: #58a6ff; }
-    .lc-arr   { color: #484f58; font-size: 14px; }
-    .btn-reset { width: 100%; background: none; border: 1px solid #30363d; color: #8b949e; border-radius: 8px; padding: 10px; font-size: 13px; cursor: pointer; margin-top: 10px; }
-    .btn-reset:hover { background: #1c2128; color: #e6edf3; }
+    .result-headline { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--color-primary); margin-bottom: 6px; }
+    .result-sub { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 16px; line-height: 1.5; }
+    .link-card { display: flex; align-items: center; justify-content: space-between; background: var(--color-bg-page); border: 1px solid #D0DAF5; border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; text-decoration: none; transition: border-color .15s; }
+    .link-card:hover { border-color: var(--color-primary); }
+    .lc-label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--color-primary-muted); font-weight: 600; }
+    .lc-url   { font-size: 11px; font-family: monospace; color: var(--color-primary); }
+    .lc-arr   { color: var(--color-primary); font-size: 16px; margin-left: 8px; flex-shrink: 0; }
+    .btn-secondary { width: 100%; background: none; border: 1px solid #D0DAF5; color: var(--color-text-secondary); border-radius: 6px; padding: 9px; font-size: 13px; cursor: pointer; margin-top: 8px; font-family: var(--font-body); transition: all .15s; }
+    .btn-secondary:hover { background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary); }
 
-    /* table */
-    .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
-    .section-title { font-size: 18px; font-weight: 700; color: #f0f6fc; }
-    .section-count { font-size: 13px; color: #8b949e; }
-    .table-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; }
-    th { background: #161b22; color: #8b949e; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: 12px 18px; text-align: left; border-bottom: 1px solid #30363d; }
-    td { padding: 13px 18px; font-size: 13px; border-bottom: 1px solid #21262d; vertical-align: middle; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #1c2128; }
-    .app-name { font-weight: 700; color: #f0f6fc; font-family: monospace; }
-    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-    .dg { background: #3fb950; box-shadow: 0 0 5px #3fb95044; }
-    .dy { background: #d29922; }
-    .dr { background: #f85149; }
-    .dm { background: #484f58; }
-    .env-cell { display: flex; align-items: center; color: #8b949e; }
-    .links { display: flex; flex-wrap: wrap; gap: 6px; }
-    .lnk { display: inline-block; padding: 4px 9px; border-radius: 5px; font-size: 11px; font-weight: 600; text-decoration: none; border: 1px solid; }
-    .lnk:hover { opacity: .7; }
-    .lb { color: #79c0ff; border-color: #1f6feb44; background: #1f6feb14; }
-    .lg { color: #56d364; border-color: #2ea04344; background: #2ea04314; }
-    .lo { color: #ffa657; border-color: #d2992244; background: #d2992214; }
-    .lp { color: #d2a8ff; border-color: #8957e544; background: #8957e514; }
-    .lt { color: #39d353; border-color: #39d35344; background: #39d35314; }
-    .empty { color: #8b949e; font-size: 14px; padding: 40px 18px; text-align: center; }
+    /* ── Card grid ── */
+    .card-grid { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; flex: 1; min-width: 0; }
 
-    @media(max-width:720px){ .wizard-wrap{grid-template-columns:1fr} .wizard-pitch{display:none} }
+    /* App card */
+    .app-card { width: 280px; background: var(--color-bg-white); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+    .app-card-header {
+      height: 140px; position: relative;
+      display: flex; align-items: flex-end; padding: 14px 18px;
+      overflow: hidden;
+    }
+    .app-card-header::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 20%, rgba(255,255,255,.1) 0%, transparent 60%); pointer-events: none; }
+    .app-card-header-name { font-family: monospace; font-size: 20px; font-weight: 700; color: rgba(255,255,255,.95); position: relative; z-index: 1; letter-spacing: -.02em; word-break: break-all; }
+    .app-card-health-badge {
+      position: absolute; top: 12px; right: 12px; z-index: 1;
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(0,0,0,.28); backdrop-filter: blur(4px);
+      border-radius: 20px; padding: 4px 10px;
+      font-size: 11px; font-weight: 600; color: #fff;
+    }
+    .sdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .sdot-green  { background: #3fb950; box-shadow: 0 0 4px #3fb95088; }
+    .sdot-yellow { background: #d29922; }
+    .sdot-red    { background: #F50057; }
+    .sdot-gray   { background: var(--color-primary-muted); }
+
+    .app-card-body { padding: 14px 18px 18px; display: flex; flex-direction: column; flex: 1; gap: 10px; }
+    .app-card-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-primary); line-height: 22px; letter-spacing: .15px; word-break: break-all; }
+
+    .app-card-envs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .env-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--color-primary-light); color: var(--color-primary); font-size: 12px; font-weight: 600; border-radius: 16px; padding: 3px 10px; height: 24px; white-space: nowrap; }
+    .env-chip.chip-gray { background: #F0F3FD; color: #92A0B8; }
+
+    .app-card-links { display: flex; flex-wrap: wrap; gap: 6px; }
+    .app-lnk { display: inline-block; padding: 5px 11px; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none; font-family: var(--font-display); letter-spacing: .8px; text-transform: uppercase; cursor: pointer; transition: opacity .15s; white-space: nowrap; }
+    .app-lnk:hover { opacity: .75; }
+    .al-dev  { background: var(--color-primary); color: #fff; }
+    .al-prod { background: var(--color-primary-dark); color: #fff; }
+    .al-argo { background: var(--color-primary-light); color: var(--color-primary); }
+    .al-graf { background: var(--color-primary-light); color: var(--color-primary); }
+    .al-inf  { background: var(--color-primary-light); color: var(--color-primary); }
+
+    /* loading / empty */
+    .loading-row { display: flex; align-items: center; gap: 12px; padding: 40px 0; color: var(--color-text-secondary); font-size: 14px; }
+    .empty-card { width: 100%; padding: 60px 24px; text-align: center; color: var(--color-text-secondary); }
+    .empty-card .empty-icon { font-size: 40px; margin-bottom: 10px; opacity: .35; }
+    .empty-card p { font-size: 14px; }
+
+    /* error */
+    .err-bar { background: #FFF0F3; border: 1px solid #F50057; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #c0003a; margin-top: 10px; }
   </style>
 </head>
 <body>
 
-<header>
-  <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#1f6feb"/><path d="M8 16L14 10L20 16L14 22Z" fill="white" opacity=".7"/><path d="M14 16L20 10L26 16L20 22Z" fill="white"/></svg>
-  <span class="logo-name">EasyDeploy</span>
-  <span class="logo-tag">developer portal</span>
-</header>
-
-<main>
-  <div class="wizard-wrap">
-    <!-- Left: pitch -->
-    <div class="wizard-pitch">
-      <div class="pitch-kicker">Ship in minutes, not days</div>
-      <div class="pitch-headline">One file.<br/><em>Everything</em><br/>is handled.</div>
-      <ul class="pitch-list">
-        <li>HTTPS endpoints for dev &amp; prod</li>
-        <li>Secrets vault, isolated per app</li>
-        <li>Grafana dashboard, day one</li>
-        <li>GitOps — push to deploy</li>
-        <li>Deploy notifications</li>
-      </ul>
-    </div>
-
-    <!-- Right: wizard -->
-    <div class="wizard-right">
-      <div class="step-dots">
-        <div class="step-dot active" id="d0"></div>
-        <div class="step-dot" id="d1"></div>
-        <div class="step-dot" id="d2"></div>
-      </div>
-
-      <!-- Form -->
-      <div class="pane active" id="pane-form">
-        <div class="pane-label">New app</div>
-        <div class="pane-title">What are you building?</div>
-        <div class="field">
-          <label>App name</label>
-          <input id="f-name" type="text" placeholder="my-cool-app" autocomplete="off" oninput="onName()" />
-          <div class="field-hint">Lowercase, hyphens ok, at least 5 chars</div>
-          <div class="field-err" id="name-err"></div>
-        </div>
-        <div class="row">
-          <div class="field"><label>Team</label><input id="f-team" type="text" value="easy-deploy" /></div>
-          <div class="field"><label>Port</label><input id="f-port" type="number" value="3000" min="1" max="65535" /></div>
-        </div>
-        <button class="btn-go" onclick="startCreate()">Create &amp; deploy →</button>
-      </div>
-
-      <!-- Progress -->
-      <div class="pane" id="pane-prog">
-        <div class="pane-label">Deploying</div>
-        <div class="pane-title" id="prog-title">Setting things up…</div>
-        <div id="prog-list"></div>
-      </div>
-
-      <!-- Result -->
-      <div class="pane" id="pane-result">
-        <div class="result-headline" id="r-head"></div>
-        <div class="result-sub">Build takes ~2 min. Watch it appear in the table below.</div>
-        <div id="r-links"></div>
-        <button class="btn-reset" onclick="reset()">Deploy another app</button>
-      </div>
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <svg viewBox="0 0 30 30" fill="none">
+      <rect width="30" height="30" rx="7" fill="rgba(255,255,255,.15)"/>
+      <path d="M7 15L13 9L19 15L13 21Z" fill="white" opacity=".7"/>
+      <path d="M13 15L19 9L25 15L19 21Z" fill="white"/>
+    </svg>
+    <div>
+      <div class="sidebar-logo-text">EasyDeploy</div>
+      <div class="sidebar-logo-sub">developer portal</div>
     </div>
   </div>
+  <hr class="sidebar-divider">
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-link active" href="/">
+      <div class="sidebar-nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2L2 8v10h5v-5h6v5h5V8L10 2z"/></svg>
+      </div>
+      <span class="sidebar-nav-label">Dashboard</span>
+    </a>
+    <a class="sidebar-nav-link" href="/api/apps" target="_blank">
+      <div class="sidebar-nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M6 7h8M6 11h5"/></svg>
+      </div>
+      <span class="sidebar-nav-label">API</span>
+    </a>
+  </nav>
+  <div class="sidebar-bottom">
+    <hr class="sidebar-divider">
+    <a class="sidebar-nav-link" href="https://github.com/easydeploytest" target="_blank">
+      <div class="sidebar-nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.667A8.333 8.333 0 0 0 1.667 10c0 3.682 2.387 6.805 5.698 7.907.416.077.57-.18.57-.4v-1.4c-2.317.503-2.806-1.117-2.806-1.117-.378-.962-.924-1.218-.924-1.218-.755-.517.057-.506.057-.506.835.059 1.274.858 1.274.858.742 1.27 1.947.903 2.422.691.075-.537.29-.903.528-1.11-1.85-.21-3.795-.925-3.795-4.116 0-.909.325-1.652.858-2.234-.086-.21-.372-1.057.081-2.204 0 0 .7-.224 2.292.854A7.97 7.97 0 0 1 10 5.5c.709.003 1.422.096 2.088.281 1.59-1.078 2.29-.854 2.29-.854.453 1.147.168 1.994.082 2.204.534.582.857 1.325.857 2.234 0 3.2-1.949 3.904-3.804 4.11.3.257.566.766.566 1.544v2.289c0 .222.152.48.574.399A8.335 8.335 0 0 0 18.333 10 8.333 8.333 0 0 0 10 1.667z"/></svg>
+      </div>
+      <span class="sidebar-nav-label">GitHub</span>
+    </a>
+    <a class="sidebar-nav-link" href="#" onclick="return false">
+      <div class="sidebar-nav-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="3"/><path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42"/></svg>
+      </div>
+      <span class="sidebar-nav-label">Settings</span>
+    </a>
+  </div>
+</nav>
 
-  <!-- Apps table -->
-  <section>
-    <div class="section-head">
-      <span class="section-title">Running apps</span>
-      <span class="section-count" id="app-count"></span>
-    </div>
-    <div class="table-card">
-      <table>
-        <thead><tr><th>App</th><th>Dev</th><th>Prod</th><th>Links</th></tr></thead>
-        <tbody id="tbody"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
-      </table>
-    </div>
-  </section>
-</main>
+<!-- ── Main ── -->
+<div class="app-root">
+  <main>
+    <header class="page-header">
+      <h1>Applications</h1>
+      <span class="page-subtitle">Live status of deployed apps. Use the panel to create a new app — one API call provisions everything.</span>
+    </header>
+
+    <article class="page-article">
+      <div class="content-layout">
+
+        <!-- ── Wizard panel ── -->
+        <aside class="wizard-panel">
+          <div class="wizard-panel-header">
+            <p class="wizard-panel-title">Deploy New App</p>
+          </div>
+
+          <div class="step-dots">
+            <div class="step-dot active" id="d0"></div>
+            <div class="step-dot" id="d1"></div>
+            <div class="step-dot" id="d2"></div>
+          </div>
+
+          <!-- Form -->
+          <div class="pane active" id="pane-form">
+            <div class="field">
+              <label class="field-label">App name</label>
+              <input id="f-name" type="text" placeholder="my-cool-app" autocomplete="off" oninput="onName()" />
+              <div class="field-hint">Lowercase, hyphens ok, at least 5 chars</div>
+              <div class="field-err" id="name-err"></div>
+            </div>
+            <div class="row-2">
+              <div class="field">
+                <label class="field-label">Team</label>
+                <input id="f-team" type="text" value="easy-deploy" />
+              </div>
+              <div class="field">
+                <label class="field-label">Port</label>
+                <input id="f-port" type="number" value="3000" min="1" max="65535" />
+              </div>
+            </div>
+            <button class="btn-primary" onclick="startCreate()">Create &amp; Deploy →</button>
+          </div>
+
+          <!-- Progress -->
+          <div class="pane" id="pane-prog">
+            <div class="prog-label" id="prog-title">Deploying…</div>
+            <div id="prog-list"></div>
+          </div>
+
+          <!-- Result -->
+          <div class="pane" id="pane-result">
+            <div class="result-headline" id="r-head"></div>
+            <div class="result-sub">Build takes ~2 min. Watch the new card appear in the grid.</div>
+            <div id="r-links"></div>
+            <button class="btn-secondary" onclick="reset()">Deploy another app</button>
+          </div>
+        </aside>
+
+        <!-- ── Card grid ── -->
+        <div class="card-grid" id="card-grid">
+          <div class="loading-row">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--color-primary-light);display:flex;align-items:center;justify-content:center;animation:rot 1.2s linear infinite;font-size:13px;color:var(--color-primary)">↻</div>
+            Loading apps…
+          </div>
+        </div>
+
+      </div>
+    </article>
+  </main>
+</div>
 
 <script>
 const STEPS = {
   create_repo: 'Create GitHub repository',
   wait_init:   'Initialise repository',
-  configure:   'Write app.yaml and trigger deploy',
+  configure:   'Write app.yaml — triggers deploy',
   set_secret:  'Provision deploy credentials',
 }
+
+const CARD_GRADIENTS = [
+  'linear-gradient(135deg,#0D2497 0%,#1456E0 60%,#4A90D9 100%)',
+  'linear-gradient(135deg,#0D2497 0%,#1456E0 100%)',
+  'linear-gradient(135deg,#1456E0 0%,#0D2497 50%,#071660 100%)',
+  'linear-gradient(135deg,#071660 0%,#1456E0 100%)',
+]
+
 let appName = ''
 
 function dot(i, s) {
   document.getElementById('d'+i).className = 'step-dot'+(s?' '+s:'')
 }
 function pane(id) {
-  ;['pane-form','pane-prog','pane-result'].forEach(p=>document.getElementById(p).classList.remove('active'))
+  ['pane-form','pane-prog','pane-result'].forEach(p => document.getElementById(p).classList.remove('active'))
   document.getElementById(id).classList.add('active')
 }
 
 function onName() {
-  const v = document.getElementById('f-name').value
+  const v   = document.getElementById('f-name').value
   const err = document.getElementById('name-err')
   const inp = document.getElementById('f-name')
   if (v && !/^[a-z][a-z0-9-]{4,}$/.test(v)) {
     err.textContent = 'Start with a letter, lowercase, at least 5 chars'
     err.style.display = ''
     inp.classList.add('err')
-  } else { err.style.display='none'; inp.classList.remove('err') }
+  } else { err.style.display = 'none'; inp.classList.remove('err') }
 }
 
 function reset() {
   dot(0,'active'); dot(1,''); dot(2,'')
   pane('pane-form')
-  document.getElementById('f-name').value=''
+  document.getElementById('f-name').value = ''
   document.getElementById('f-name').classList.remove('err')
-  document.getElementById('name-err').style.display='none'
+  document.getElementById('name-err').style.display = 'none'
 }
 
 async function startCreate() {
   const name = document.getElementById('f-name').value.trim()
-  const team = document.getElementById('f-team').value.trim()||'easy-deploy'
-  const port = parseInt(document.getElementById('f-port').value)||3000
+  const team = document.getElementById('f-team').value.trim() || 'easy-deploy'
+  const port = parseInt(document.getElementById('f-port').value) || 3000
   if (!name) { document.getElementById('f-name').focus(); return }
   if (!/^[a-z][a-z0-9-]{4,}$/.test(name)) { onName(); return }
   appName = name
   dot(0,'done'); dot(1,'active'); dot(2,'')
   pane('pane-prog')
-  document.getElementById('prog-title').textContent = 'Deploying '+name+'…'
+  document.getElementById('prog-title').textContent = 'Deploying ' + name + '…'
 
   const list = document.getElementById('prog-list')
   list.innerHTML = ''
@@ -240,88 +360,131 @@ async function startCreate() {
     if (rows[key]) return
     const d = document.createElement('div')
     d.className = 'prog-row'
-    d.innerHTML = `<div class="prog-icon pi-wait" id="pi-${key}">○</div><div class="prog-text" id="pt-${key}">${STEPS[key]??key}</div>`
-    list.appendChild(d)
-    rows[key] = d
+    d.innerHTML = `<div class="prog-icon pi-wait" id="pi-${key}">○</div><div class="prog-text" id="pt-${key}">${STEPS[key] ?? key}</div>`
+    list.appendChild(d); rows[key] = d
   }
   Object.keys(STEPS).forEach(mkRow)
 
   function upd(key, status, msg) {
     mkRow(key)
-    const icon = document.getElementById('pi-'+key)
-    const text = document.getElementById('pt-'+key)
-    const m = {running:['pi-run','↻'],done:['pi-done','✓'],error:['pi-err','✗']}
-    const [cls,ch] = m[status]??['pi-wait','○']
-    icon.className='prog-icon '+cls; icon.textContent=ch
-    if (msg){text.textContent=msg; text.className='prog-text'+(status==='done'?' done':'')}
+    const icon = document.getElementById('pi-' + key)
+    const text = document.getElementById('pt-' + key)
+    const m = { running: ['pi-run','↻'], done: ['pi-done','✓'], error: ['pi-err','✗'] }
+    const [cls, ch] = m[status] ?? ['pi-wait','○']
+    icon.className = 'prog-icon ' + cls; icon.textContent = ch
+    if (msg) { text.textContent = msg; text.className = 'prog-text' + (status === 'done' ? ' done' : '') }
   }
 
   try {
-    const res = await fetch('/api/create-app',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,team,port})})
-    if (!res.ok){const e=await res.json(); throw new Error(e.error??'Server error')}
-    const reader=res.body.getReader(), dec=new TextDecoder()
-    let buf='', result=null
-    while(true){
-      const {done,value}=await reader.read()
-      if(done) break
-      buf+=dec.decode(value,{stream:true})
-      const lines=buf.split('\n'); buf=lines.pop()
-      for(const line of lines){
-        if(!line.startsWith('data: ')) continue
-        const evt=JSON.parse(line.slice(6))
-        if(evt.error) throw new Error(evt.error)
-        if(evt.done){result=evt;continue}
-        upd(evt.step,evt.status,evt.message)
+    const res = await fetch('/api/create-app', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, team, port }),
+    })
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error ?? 'Server error') }
+    const reader = res.body.getReader(), dec = new TextDecoder()
+    let buf = '', result = null
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buf += dec.decode(value, { stream: true })
+      const lines = buf.split('\n'); buf = lines.pop()
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue
+        const evt = JSON.parse(line.slice(6))
+        if (evt.error) throw new Error(evt.error)
+        if (evt.done) { result = evt; continue }
+        upd(evt.step, evt.status, evt.message)
       }
     }
-    if(!result) throw new Error('No result')
+    if (!result) throw new Error('No result received')
     showResult(result)
-  } catch(e) {
-    list.innerHTML+=`<div style="color:#f85149;font-size:13px;padding:12px 0">❌ ${e.message}</div>`
+  } catch (e) {
+    const el = document.createElement('div')
+    el.className = 'err-bar'; el.textContent = '✗ ' + e.message
+    list.appendChild(el)
   }
 }
 
 function showResult(r) {
   dot(1,'done'); dot(2,'active')
   pane('pane-result')
-  document.getElementById('r-head').textContent=appName+' is deploying 🚀'
-  const links=[['GitHub repo',r.repo],['Actions (live log)',r.actions_url],['Dev URL (ready in ~2min)',r.dev_url],['ArgoCD',r.argocd_url],['Grafana',r.grafana_url]]
-  document.getElementById('r-links').innerHTML=links.map(([l,u])=>`
+  document.getElementById('r-head').textContent = appName + ' is deploying 🚀'
+  const links = [
+    ['GitHub repo',          r.repo],
+    ['Actions (live log)',   r.actions_url],
+    ['Dev URL (~2 min)',     r.dev_url],
+    ['ArgoCD',               r.argocd_url],
+    ['Grafana',              r.grafana_url],
+  ]
+  document.getElementById('r-links').innerHTML = links.map(([l, u]) => `
     <a class="link-card" href="${u}" target="_blank">
-      <div><div class="lc-label">${l}</div><div class="lc-url">${u.replace('https://','')}</div></div>
+      <div>
+        <div class="lc-label">${l}</div>
+        <div class="lc-url">${u.replace('https://','')}</div>
+      </div>
       <span class="lc-arr">↗</span>
     </a>`).join('')
   loadApps()
 }
 
-/* table */
-function hdot(h){return`<span class="dot ${h==='Healthy'?'dg':h==='Progressing'?'dy':h==='Degraded'?'dr':'dm'}"></span>`}
-function eCell(e){return e?`<div class="env-cell">${hdot(e.health)}${e.health}</div>`:'<span style="color:#484f58">—</span>'}
-
-async function loadApps(){
-  const tb=document.getElementById('tbody')
-  try{
-    const apps=await fetch('/api/apps').then(r=>r.json())
-    if(!Array.isArray(apps)||!apps.length){tb.innerHTML='<tr><td colspan="4" class="empty">No apps yet.</td></tr>';document.getElementById('app-count').textContent='';return}
-    document.getElementById('app-count').textContent=apps.length+' app'+(apps.length!==1?'s':'')
-    tb.innerHTML=apps.map(a=>`<tr>
-      <td class="app-name">${a.name}</td>
-      <td>${eCell(a.dev)}</td>
-      <td>${eCell(a.prod)}</td>
-      <td><div class="links">
-        <a class="lnk lb" href="${a.links.dev}" target="_blank">Dev</a>
-        <a class="lnk lg" href="${a.links.prod}" target="_blank">Prod</a>
-        <a class="lnk lo" href="${a.links.argocd}" target="_blank">ArgoCD</a>
-        <a class="lnk lp" href="${a.links.grafana}" target="_blank">Grafana</a>
-        <a class="lnk lt" href="${a.links.infisical}" target="_blank">Infisical</a>
-      </div></td>
-    </tr>`).join('')
-  }catch(e){tb.innerHTML=`<tr><td colspan="4" class="empty" style="color:#f85149">Error: ${e}</td></tr>`}
+/* ── App cards ── */
+function healthDot(h) {
+  const cls = h === 'Healthy' ? 'sdot-green' : h === 'Progressing' ? 'sdot-yellow' : h === 'Degraded' ? 'sdot-red' : 'sdot-gray'
+  return `<span class="sdot ${cls}"></span>`
 }
 
-document.getElementById('f-name').addEventListener('keydown',e=>{if(e.key==='Enter')startCreate()})
+function envChip(env, label) {
+  if (!env) return `<span class="env-chip chip-gray">${label}: —</span>`
+  const h = env.health ?? 'Unknown'
+  return `<span class="env-chip">${healthDot(h)} ${label}: ${h}</span>`
+}
+
+function buildCard(app, idx) {
+  const grad = CARD_GRADIENTS[idx % CARD_GRADIENTS.length]
+  const devH  = app.dev?.health  ?? 'Unknown'
+  const badgeCls = devH === 'Healthy' ? 'sdot-green' : devH === 'Progressing' ? 'sdot-yellow' : devH === 'Degraded' ? 'sdot-red' : 'sdot-gray'
+
+  return `
+  <div class="app-card">
+    <div class="app-card-header" style="background:${grad}">
+      <div class="app-card-health-badge"><span class="sdot ${badgeCls}"></span>${devH}</div>
+      <div class="app-card-header-name">${app.name}</div>
+    </div>
+    <div class="app-card-body">
+      <div class="app-card-title">${app.name}</div>
+      <div class="app-card-envs">
+        ${envChip(app.dev,  'Dev')}
+        ${envChip(app.prod, 'Prod')}
+      </div>
+      <div class="app-card-links">
+        <a class="app-lnk al-dev"  href="${app.links.dev}"       target="_blank">Dev</a>
+        <a class="app-lnk al-prod" href="${app.links.prod}"      target="_blank">Prod</a>
+        <a class="app-lnk al-argo" href="${app.links.argocd}"    target="_blank">ArgoCD</a>
+        <a class="app-lnk al-graf" href="${app.links.grafana}"   target="_blank">Grafana</a>
+        <a class="app-lnk al-inf"  href="${app.links.infisical}" target="_blank">Infisical</a>
+      </div>
+    </div>
+  </div>`
+}
+
+async function loadApps() {
+  const grid = document.getElementById('card-grid')
+  try {
+    const apps = await fetch('/api/apps').then(r => r.json())
+    if (!Array.isArray(apps) || !apps.length) {
+      grid.innerHTML = `<div class="empty-card"><div class="empty-icon">🚀</div><p>No apps deployed yet.<br>Use the panel to create your first app.</p></div>`
+      return
+    }
+    grid.innerHTML = apps.map((a, i) => buildCard(a, i)).join('')
+  } catch (e) {
+    grid.innerHTML = `<div class="empty-card" style="color:#F50057">Error loading apps: ${e}</div>`
+  }
+}
+
+document.getElementById('f-name').addEventListener('keydown', e => { if (e.key === 'Enter') startCreate() })
 loadApps()
-setInterval(loadApps,15000)
+setInterval(loadApps, 15000)
 </script>
 </body>
 </html>
