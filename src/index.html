@@ -9,379 +9,356 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Red+Hat+Display:wght@700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --color-primary:        #1456E0;
-      --color-primary-dark:   #0D2497;
-      --color-primary-light:  #E7EEFC;
-      --color-primary-muted:  #A1BCF3;
-      --color-text-primary:   #092241;
-      --color-text-secondary: rgba(9,34,65,.8);
-      --color-bg-page:        #F5F7FE;
-      --color-bg-white:       #FFFFFF;
-      --color-divider:        rgba(255,255,255,.2);
-      --font-display: 'Red Hat Display', sans-serif;
-      --font-body:    'Open Sans', sans-serif;
+      --primary:        #1456E0;
+      --primary-dark:   #0D2497;
+      --primary-light:  #E7EEFC;
+      --primary-muted:  #A1BCF3;
+      --text:           #092241;
+      --text-secondary: rgba(9,34,65,.8);
+      --bg:             #F5F7FE;
+      --white:          #FFFFFF;
+      --divider:        rgba(255,255,255,.2);
+      --border:         #D0DAF5;
+      --error:          #F50057;
+      --success:        #3fb950;
+      --sidebar-w:      224px;
+      --font-h:  'Red Hat Display', sans-serif;
+      --font-b:  'Open Sans', sans-serif;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: var(--font-body); background: var(--color-bg-page); color: var(--color-text-primary); font-size: 14px; line-height: 20px; }
+    body { font-family: var(--font-b); background: var(--bg); color: var(--text); font-size: 14px; line-height: 20px; }
 
-    /* ── Sidebar ── */
+    /* ── Sidebar ───────────────────────────────────────────────────────────── */
     .sidebar {
-      position: fixed; top: 0; left: 0;
-      width: 224px; height: 100vh;
-      background: linear-gradient(0deg, #0D2497 0%, #1456E0 100%);
-      display: flex; flex-direction: column; align-items: flex-start;
-      z-index: 100; overflow-y: auto;
+      position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh;
+      background: linear-gradient(0deg, var(--primary-dark) 0%, var(--primary) 100%);
+      display: flex; flex-direction: column; z-index: 50; overflow-y: auto;
     }
-    .sidebar-logo {
-      height: 96px; display: flex; align-items: center;
-      padding: 0 24px; width: 100%; gap: 10px; flex-shrink: 0;
+    .sb-logo {
+      height: 96px; display: flex; align-items: center; padding: 0 20px; gap: 10px; flex-shrink: 0;
     }
-    .sidebar-logo svg { width: 30px; height: 30px; flex-shrink: 0; }
-    .sidebar-logo-text { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: #fff; }
-    .sidebar-logo-sub  { font-size: 11px; color: var(--color-primary-muted); margin-top: 1px; }
-    .sidebar-divider   { width: 100%; height: 1px; background: var(--color-divider); border: none; flex-shrink: 0; }
-    .sidebar-nav { width: 100%; flex: 1; }
-    .sidebar-nav-link {
-      display: flex; align-items: center;
-      width: 224px; height: 48px;
-      color: var(--color-primary-muted);
-      text-decoration: none; font-size: 14px; font-weight: 400;
-      font-family: var(--font-body); transition: color .15s;
+    .sb-logo svg { width: 28px; height: 28px; flex-shrink: 0; }
+    .sb-logo-name { font-family: var(--font-h); font-size: 14px; font-weight: 700; color: #fff; line-height: 1.2; }
+    .sb-logo-sub  { font-size: 11px; color: var(--primary-muted); margin-top: 1px; }
+    .sb-hr { width: 100%; height: 1px; background: var(--divider); border: none; flex-shrink: 0; }
+    .sb-nav { flex: 1; display: flex; flex-direction: column; }
+    .sb-link {
+      display: flex; align-items: center; width: 100%; height: 48px;
+      text-decoration: none; color: var(--primary-muted);
+      font-size: 14px; font-family: var(--font-b); font-weight: 400;
+      border: none; background: none; cursor: pointer; text-align: left;
+      transition: background .15s, color .15s;
     }
-    .sidebar-nav-link:hover { color: #fff; }
-    .sidebar-nav-link.active { color: #fff; }
-    .sidebar-nav-icon { width: 72px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .sidebar-nav-label { flex: 1; }
-    .sidebar-bottom { margin-top: auto; width: 100%; padding-bottom: 8px; }
+    .sb-link:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .sb-link.active { color: #fff; background: rgba(255,255,255,.13); }
+    .sb-icon { width: 72px; height: 48px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sb-label { flex: 1; }
+    .sb-bottom { margin-top: auto; display: flex; flex-direction: column; }
 
-    /* ── Main layout ── */
-    .app-root { padding-left: 224px; min-height: 100vh; }
-    main { display: block; width: 100%; }
+    /* notification badge on bell */
+    .sb-badge {
+      background: var(--error); color: #fff;
+      font-size: 10px; font-weight: 700; min-width: 16px; height: 16px;
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      padding: 0 3px; margin-right: 6px; flex-shrink: 0;
+    }
+    .sb-badge.hidden { display: none; }
 
-    .page-header { padding: 24px 24px 8px 24px; }
-    h1 { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1.17; color: var(--color-text-primary); }
-    .page-subtitle { font-size: 14px; font-weight: 500; line-height: 20px; color: var(--color-text-secondary); display: inline-block; margin-top: 8px; }
+    /* ── Main ──────────────────────────────────────────────────────────────── */
+    .main { padding-left: var(--sidebar-w); min-height: 100vh; }
+    .page-header { padding: 28px 24px 12px; }
+    h1 { font-family: var(--font-h); font-size: 32px; font-weight: 700; line-height: 1.17; color: var(--text); }
+    .page-sub { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-top: 8px; display: block; }
+    .page-body { padding: 8px 24px 40px; display: flex; gap: 24px; align-items: flex-start; }
 
-    .page-article { padding: 24px; }
-    .content-layout { display: flex; flex-direction: row; gap: 24px; align-items: flex-start; }
+    /* ── Wizard panel (left, like filter panel) ───────────────────────────── */
+    .wizard-panel {
+      width: 320px; min-width: 320px; background: var(--white);
+      border-radius: 20px; padding: 20px; flex-shrink: 0;
+    }
+    .wp-title { font-size: 16px; font-weight: 600; color: var(--text); letter-spacing: .15px; margin-bottom: 4px; }
+    .wp-underline { height: 3px; width: 48px; background: var(--primary); border-radius: 2px; margin-bottom: 20px; }
 
-    /* ── Wizard panel (left, like filter panel) ── */
-    .wizard-panel { width: 320px; min-width: 320px; background: var(--color-bg-white); border-radius: 20px; padding: 20px; flex-shrink: 0; }
-    .wizard-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .wizard-panel-title { font-size: 16px; font-weight: 600; color: var(--color-text-primary); letter-spacing: .15px; }
-
-    .step-dots { display: flex; gap: 6px; margin-bottom: 18px; }
-    .step-dot { height: 3px; border-radius: 2px; flex: 1; background: var(--color-primary-light); transition: background .3s; }
-    .step-dot.active { background: var(--color-primary); }
-    .step-dot.done   { background: #3fb950; }
+    /* step dots */
+    .step-dots { display: flex; gap: 6px; margin-bottom: 20px; }
+    .step-dot { height: 3px; border-radius: 2px; flex: 1; background: var(--primary-light); transition: background .3s; }
+    .step-dot.active { background: var(--primary); }
+    .step-dot.done   { background: var(--success); }
 
     .pane { display: none; }
     .pane.active { display: block; }
 
-    /* form fields */
+    /* form */
     .field { margin-bottom: 14px; }
-    .field-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 5px; }
+    .f-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 5px; }
     input[type=text], input[type=number] {
-      width: 100%; background: var(--color-bg-page); border: 1px solid #D0DAF5;
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
       border-radius: 8px; padding: 9px 12px; font-size: 14px;
-      font-family: var(--font-body); color: var(--color-text-primary);
-      outline: none; transition: border-color .15s;
+      font-family: var(--font-b); color: var(--text); outline: none; transition: border-color .15s;
     }
-    input:focus { border-color: var(--color-primary); }
-    input.err   { border-color: #F50057; }
-    input::placeholder { color: var(--color-primary-muted); }
-    .field-hint { font-size: 11px; color: var(--color-text-secondary); margin-top: 4px; opacity: .7; }
-    .field-err  { font-size: 11px; color: #F50057; margin-top: 4px; display: none; }
-    .row-2 { display: flex; gap: 10px; }
-    .row-2 .field { flex: 1; }
-
-    .btn-primary {
-      width: 100%; background: var(--color-primary); color: #fff; border: none;
-      border-radius: 6px; padding: 11px; font-family: var(--font-display);
-      font-size: 14px; font-weight: 700; letter-spacing: 1.25px;
-      text-transform: uppercase; cursor: pointer; margin-top: 4px; transition: background .15s;
+    input:focus { border-color: var(--primary); }
+    input.err   { border-color: var(--error); }
+    input::placeholder { color: var(--primary-muted); }
+    .f-hint { font-size: 11px; color: var(--text-secondary); margin-top: 4px; opacity: .75; }
+    .f-err  { font-size: 11px; color: var(--error); margin-top: 4px; display: none; }
+    .row2 { display: flex; gap: 10px; }
+    .row2 .field { flex: 1; }
+    .btn-cta {
+      width: 100%; background: var(--primary); color: #fff; border: none;
+      border-radius: 6px; padding: 11px; font-family: var(--font-h);
+      font-size: 14px; font-weight: 700; letter-spacing: 1.25px; text-transform: uppercase;
+      cursor: pointer; margin-top: 6px; transition: background .15s;
     }
-    .btn-primary:hover { background: var(--color-primary-dark); }
+    .btn-cta:hover { background: var(--primary-dark); }
 
     /* progress */
-    .prog-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--color-text-secondary); margin-bottom: 14px; }
-    .prog-row { display: flex; align-items: flex-start; gap: 12px; padding: 9px 0; border-bottom: 1px solid #F0F3FD; }
+    .prog-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text-secondary); margin-bottom: 14px; }
+    .prog-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid #F0F3FD; }
     .prog-row:last-child { border-bottom: none; }
     .prog-icon { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
-    .pi-wait { background: var(--color-primary-light); color: var(--color-primary-muted); }
-    .pi-run  { background: var(--color-primary); color: #fff; animation: rot 1.2s linear infinite; }
-    .pi-done { background: #3fb950; color: #fff; }
-    .pi-err  { background: #F50057; color: #fff; }
-    @keyframes rot { to { transform: rotate(360deg); } }
-    .prog-text { font-size: 13px; color: var(--color-text-secondary); line-height: 1.45; flex: 1; }
-    .prog-text.done { color: var(--color-text-primary); font-weight: 500; }
+    .pi-wait { background: var(--primary-light); color: var(--primary-muted); }
+    .pi-run  { background: var(--primary); color: #fff; animation: spin 1.2s linear infinite; }
+    .pi-done { background: var(--success); color: #fff; }
+    .pi-err  { background: var(--error); color: #fff; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .prog-text { font-size: 13px; color: var(--text-secondary); line-height: 1.45; flex: 1; }
+    .prog-text.done { color: var(--text); font-weight: 500; }
 
     /* result */
-    .result-headline { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--color-primary); margin-bottom: 6px; }
-    .result-sub { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 16px; line-height: 1.5; }
-    .link-card { display: flex; align-items: center; justify-content: space-between; background: var(--color-bg-page); border: 1px solid #D0DAF5; border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; text-decoration: none; transition: border-color .15s; }
-    .link-card:hover { border-color: var(--color-primary); }
-    .lc-label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--color-primary-muted); font-weight: 600; }
-    .lc-url   { font-size: 11px; font-family: monospace; color: var(--color-primary); }
-    .lc-arr   { color: var(--color-primary); font-size: 16px; margin-left: 8px; flex-shrink: 0; }
-    .btn-secondary { width: 100%; background: none; border: 1px solid #D0DAF5; color: var(--color-text-secondary); border-radius: 6px; padding: 9px; font-size: 13px; cursor: pointer; margin-top: 8px; font-family: var(--font-body); transition: all .15s; }
-    .btn-secondary:hover { background: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary); }
+    .result-head { font-family: var(--font-h); font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+    .result-sub  { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
+    .link-card { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; text-decoration: none; transition: border-color .15s; }
+    .link-card:hover { border-color: var(--primary); }
+    .lc-label { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--primary-muted); font-weight: 600; }
+    .lc-url   { font-size: 11px; font-family: monospace; color: var(--primary); }
+    .lc-arr   { color: var(--primary); font-size: 16px; margin-left: 8px; flex-shrink: 0; }
+    .btn-ghost { width: 100%; background: none; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 6px; padding: 9px; font-size: 13px; cursor: pointer; margin-top: 8px; font-family: var(--font-b); transition: all .15s; }
+    .btn-ghost:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
 
-    /* ── Card grid ── */
+    /* ── Card grid ────────────────────────────────────────────────────────── */
     .card-grid { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; flex: 1; min-width: 0; }
 
-    /* App card */
-    .app-card { width: 280px; background: var(--color-bg-white); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
-    .app-card-header {
-      height: 140px; position: relative;
+    .app-card { width: 300px; background: var(--white); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .card-img {
+      height: 200px; position: relative; overflow: hidden;
       display: flex; align-items: flex-end; padding: 14px 18px;
-      overflow: hidden;
     }
-    .app-card-header::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 20%, rgba(255,255,255,.1) 0%, transparent 60%); pointer-events: none; }
-    .app-card-header-name { font-family: monospace; font-size: 20px; font-weight: 700; color: rgba(255,255,255,.95); position: relative; z-index: 1; letter-spacing: -.02em; word-break: break-all; }
-    .app-card-health-badge {
-      position: absolute; top: 12px; right: 12px; z-index: 1;
+    .card-img::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 75% 15%, rgba(255,255,255,.12) 0%, transparent 55%); pointer-events: none; }
+    .card-img-name { font-family: monospace; font-size: 22px; font-weight: 700; color: rgba(255,255,255,.92); position: relative; z-index: 1; word-break: break-all; }
+    .card-status-badge {
+      position: absolute; top: 12px; right: 12px; z-index: 2;
       display: flex; align-items: center; gap: 5px;
-      background: rgba(0,0,0,.28); backdrop-filter: blur(4px);
+      background: rgba(0,0,0,.3); backdrop-filter: blur(3px);
       border-radius: 20px; padding: 4px 10px;
       font-size: 11px; font-weight: 600; color: #fff;
     }
-    .sdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .sdot-green  { background: #3fb950; box-shadow: 0 0 4px #3fb95088; }
-    .sdot-yellow { background: #d29922; }
-    .sdot-red    { background: #F50057; }
-    .sdot-gray   { background: var(--color-primary-muted); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dot-green  { background: #3fb950; box-shadow: 0 0 5px #3fb95088; }
+    .dot-yellow { background: #d29922; }
+    .dot-red    { background: var(--error); }
+    .dot-gray   { background: var(--primary-muted); }
 
-    .app-card-body { padding: 14px 18px 18px; display: flex; flex-direction: column; flex: 1; gap: 10px; }
-    .app-card-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-primary); line-height: 22px; letter-spacing: .15px; word-break: break-all; }
+    .card-body { padding: 16px 24px; display: flex; flex-direction: column; flex: 1; }
+    .card-title { font-family: var(--font-h); font-size: 20px; font-weight: 700; color: var(--primary); line-height: 24px; letter-spacing: .15px; margin-bottom: 8px; word-break: break-all; }
 
-    .app-card-envs { display: flex; gap: 8px; flex-wrap: wrap; }
-    .env-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--color-primary-light); color: var(--color-primary); font-size: 12px; font-weight: 600; border-radius: 16px; padding: 3px 10px; height: 24px; white-space: nowrap; }
-    .env-chip.chip-gray { background: #F0F3FD; color: #92A0B8; }
+    .card-envs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .env-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--primary); color: #fff; font-size: 13px; font-weight: 400; border-radius: 16px; padding: 0 8px; height: 28px; white-space: nowrap; font-family: var(--font-b); }
+    .env-chip.chip-gray { background: #eee; color: #999; }
 
-    .app-card-links { display: flex; flex-wrap: wrap; gap: 6px; }
-    .app-lnk { display: inline-block; padding: 5px 11px; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none; font-family: var(--font-display); letter-spacing: .8px; text-transform: uppercase; cursor: pointer; transition: opacity .15s; white-space: nowrap; }
-    .app-lnk:hover { opacity: .75; }
-    .al-dev  { background: var(--color-primary); color: #fff; }
-    .al-prod { background: var(--color-primary-dark); color: #fff; }
-    .al-argo { background: var(--color-primary-light); color: var(--color-primary); }
-    .al-graf { background: var(--color-primary-light); color: var(--color-primary); }
-    .al-inf  { background: var(--color-primary-light); color: var(--color-primary); }
+    .card-desc { font-size: 14px; color: var(--text); line-height: 20px; flex: 1; margin-bottom: 16px; }
 
-    /* loading / empty */
-    .loading-row { display: flex; align-items: center; gap: 12px; padding: 40px 0; color: var(--color-text-secondary); font-size: 14px; }
-    .empty-card { width: 100%; padding: 60px 24px; text-align: center; color: var(--color-text-secondary); }
-    .empty-card .empty-icon { font-size: 40px; margin-bottom: 10px; opacity: .35; }
-    .empty-card p { font-size: 14px; }
-
-    /* error */
-    .err-bar { background: #FFF0F3; border: 1px solid #F50057; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #c0003a; margin-top: 10px; }
-
-    /* ── Notification bell ── */
-    .notif-btn {
-      position: relative; background: none; border: none; cursor: pointer;
-      color: var(--color-primary-muted); padding: 0; display: flex;
-      align-items: center; justify-content: center;
-      width: 72px; height: 48px; transition: color .15s;
-    }
-    .notif-btn:hover { color: #fff; }
-    .notif-badge {
-      position: absolute; top: 10px; right: 14px;
-      background: #F50057; color: #fff;
-      font-size: 10px; font-weight: 700;
-      min-width: 16px; height: 16px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      padding: 0 3px; pointer-events: none;
-    }
-    .notif-badge.hidden { display: none; }
-
-    .notif-panel {
-      position: fixed; top: 0; left: 224px;
-      width: 360px; height: 100vh;
-      background: var(--color-bg-white);
-      box-shadow: 4px 0 24px rgba(9,34,65,.12);
-      z-index: 200; display: flex; flex-direction: column;
-      transform: translateX(-110%); transition: transform .25s ease;
-    }
-    .notif-panel.open { transform: translateX(0); }
-
-    .notif-panel-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 20px 16px; border-bottom: 1px solid #EFF2FB; flex-shrink: 0;
-    }
-    .notif-panel-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--color-text-primary); }
-    .notif-close-btn { background: none; border: none; cursor: pointer; color: var(--color-primary-muted); font-size: 20px; line-height: 1; padding: 4px; }
-    .notif-close-btn:hover { color: var(--color-text-primary); }
-
-    .notif-list { flex: 1; overflow-y: auto; padding: 8px 0; }
-    .notif-item {
-      padding: 14px 20px; border-bottom: 1px solid #F5F7FE; cursor: default;
+    .card-links { display: flex; flex-wrap: wrap; gap: 6px; }
+    .card-lnk {
+      display: inline-block; background: transparent; border: none;
+      color: var(--primary); font-family: var(--font-h);
+      font-size: 14px; font-weight: 700; letter-spacing: 1.25px;
+      text-transform: uppercase; text-decoration: none;
+      cursor: pointer; padding: 6px 8px; border-radius: 6px; line-height: 24.5px;
       transition: background .15s;
     }
-    .notif-item:hover { background: var(--color-bg-page); }
-    .notif-item.unread { border-left: 3px solid var(--color-primary); padding-left: 17px; }
-    .notif-item-title { font-weight: 600; color: var(--color-text-primary); margin-bottom: 3px; font-size: 14px; }
-    .notif-item-body  { font-size: 13px; color: var(--color-text-secondary); line-height: 1.45; }
-    .notif-item-time  { font-size: 11px; color: var(--color-primary-muted); margin-top: 5px; }
-    .notif-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
-    .notif-tag { background: var(--color-primary-light); color: var(--color-primary); border-radius: 10px; padding: 1px 8px; font-size: 11px; font-weight: 600; }
+    .card-lnk:hover { background: var(--primary-light); }
+    .card-lnk-arrow { font-size: 16px; vertical-align: middle; }
 
-    .notif-empty { padding: 48px 20px; text-align: center; color: var(--color-primary-muted); }
-    .notif-empty-icon { font-size: 32px; margin-bottom: 10px; opacity: .5; }
+    /* empty */
+    .grid-empty { padding: 60px 24px; text-align: center; color: var(--text-secondary); flex: 1; }
+    .grid-empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .35; }
 
-    /* Toast */
-    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 400; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-    .toast {
-      background: var(--color-bg-white); border-left: 4px solid var(--color-primary);
-      border-radius: 8px; padding: 12px 16px; min-width: 280px; max-width: 360px;
-      box-shadow: 0 4px 20px rgba(9,34,65,.15);
-      animation: slideIn .25s ease; pointer-events: all;
+    /* error */
+    .err-bar { background: #FFF0F3; border: 1px solid var(--error); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #c0003a; margin-top: 10px; }
+
+    /* ── Notification drawer (right side) ─────────────────────────────────── */
+    .notif-overlay {
+      position: fixed; inset: 0; background: rgba(9,34,65,.15); z-index: 150;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
     }
-    .toast-title { font-weight: 600; color: var(--color-text-primary); font-size: 14px; }
-    .toast-body  { font-size: 13px; color: var(--color-text-secondary); margin-top: 3px; }
-    @keyframes slideIn { from { transform: translateX(110%); opacity:0 } to { transform: translateX(0); opacity:1 } }
-    @keyframes slideOut { to { transform: translateX(110%); opacity:0 } }
-    .toast.hiding { animation: slideOut .2s ease forwards; }
+    .notif-overlay.open { opacity: 1; pointer-events: all; }
+
+    .notif-drawer {
+      position: fixed; top: 0; right: 0; width: 380px; height: 100vh;
+      background: var(--white); z-index: 160;
+      display: flex; flex-direction: column;
+      transform: translateX(100%); transition: transform .25s ease;
+      box-shadow: -4px 0 24px rgba(9,34,65,.12);
+    }
+    .notif-drawer.open { transform: translateX(0); }
+
+    .notif-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 16px; border-bottom: 1px solid #EFF2FB; flex-shrink: 0; }
+    .notif-head-title { font-family: var(--font-h); font-size: 18px; font-weight: 700; color: var(--text); }
+    .notif-close { background: none; border: none; cursor: pointer; color: var(--primary-muted); font-size: 22px; line-height: 1; padding: 2px 6px; border-radius: 4px; }
+    .notif-close:hover { background: var(--primary-light); color: var(--primary); }
+
+    .notif-list { flex: 1; overflow-y: auto; }
+    .notif-item { padding: 14px 20px; border-bottom: 1px solid #F5F7FE; cursor: default; transition: background .12s; }
+    .notif-item:hover { background: var(--bg); }
+    .notif-item.unread { border-left: 3px solid var(--primary); padding-left: 17px; }
+    .ni-title { font-weight: 600; color: var(--text); font-size: 14px; margin-bottom: 3px; }
+    .ni-body  { font-size: 13px; color: var(--text-secondary); line-height: 1.45; word-break: break-all; }
+    .ni-time  { font-size: 11px; color: var(--primary-muted); margin-top: 5px; }
+    .ni-tags  { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+    .ni-tag   { background: var(--primary-light); color: var(--primary); border-radius: 10px; padding: 1px 8px; font-size: 11px; font-weight: 600; }
+    .notif-empty { padding: 56px 20px; text-align: center; color: var(--primary-muted); }
+    .notif-empty-icon { font-size: 36px; margin-bottom: 10px; opacity: .5; }
+
+    /* toasts */
+    .toast-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 400; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast { background: var(--white); border-left: 4px solid var(--primary); border-radius: 8px; padding: 12px 16px; min-width: 280px; max-width: 360px; box-shadow: 0 4px 20px rgba(9,34,65,.15); pointer-events: all; animation: toastIn .25s ease; }
+    .toast-title { font-weight: 600; color: var(--text); font-size: 14px; }
+    .toast-body  { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
+    @keyframes toastIn  { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes toastOut { to   { transform: translateX(110%); opacity: 0; } }
+    .toast.out { animation: toastOut .2s ease forwards; }
   </style>
 </head>
 <body>
 
 <!-- ── Sidebar ── -->
 <nav class="sidebar">
-  <div class="sidebar-logo">
-    <svg viewBox="0 0 30 30" fill="none">
-      <rect width="30" height="30" rx="7" fill="rgba(255,255,255,.15)"/>
-      <path d="M7 15L13 9L19 15L13 21Z" fill="white" opacity=".7"/>
-      <path d="M13 15L19 9L25 15L19 21Z" fill="white"/>
+  <div class="sb-logo">
+    <svg viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="rgba(255,255,255,.15)"/>
+      <path d="M6 14L11 9L16 14L11 19Z" fill="white" opacity=".7"/>
+      <path d="M12 14L17 9L22 14L17 19Z" fill="white"/>
     </svg>
     <div>
-      <div class="sidebar-logo-text">EasyDeploy</div>
-      <div class="sidebar-logo-sub">developer portal</div>
+      <div class="sb-logo-name">EasyDeploy</div>
+      <div class="sb-logo-sub">developer portal</div>
     </div>
   </div>
-  <hr class="sidebar-divider">
-  <nav class="sidebar-nav">
-    <a class="sidebar-nav-link active" href="/">
-      <div class="sidebar-nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2L2 8v10h5v-5h6v5h5V8L10 2z"/></svg>
+  <hr class="sb-hr">
+
+  <nav class="sb-nav">
+    <a class="sb-link active" href="/">
+      <div class="sb-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M10.5 1.5a.75.75 0 0 0-1 0L2 8.25V17a1 1 0 0 0 1 1h4v-5h6v5h4a1 1 0 0 0 1-1V8.25L10.5 1.5z"/></svg>
       </div>
-      <span class="sidebar-nav-label">Dashboard</span>
+      <span class="sb-label">Dashboard</span>
     </a>
-    <a class="sidebar-nav-link" href="/api/apps" target="_blank">
-      <div class="sidebar-nav-icon">
+    <a class="sb-link" href="/api/apps" target="_blank">
+      <div class="sb-icon">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M6 7h8M6 11h5"/></svg>
       </div>
-      <span class="sidebar-nav-label">API</span>
+      <span class="sb-label">API</span>
     </a>
-  </nav>
-  <div class="sidebar-bottom">
-    <hr class="sidebar-divider">
-    <button class="sidebar-nav-link notif-btn" onclick="toggleNotifPanel()" id="notif-btn" title="Notifications">
-      <div class="sidebar-nav-icon">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 0 0-6 6v3l-1.5 2.5A1 1 0 0 0 3.5 15h13a1 1 0 0 0 .85-1.53L16 11V8a6 6 0 0 0-6-6zm0 16a2 2 0 0 0 2-2H8a2 2 0 0 0 2 2z"/></svg>
-        <span class="notif-badge hidden" id="notif-badge">0</span>
-      </div>
-      <span class="sidebar-nav-label">Notifications</span>
-    </button>
-    <a class="sidebar-nav-link" href="https://github.com/easydeploytest" target="_blank">
-      <div class="sidebar-nav-icon">
+    <a class="sb-link" href="https://github.com/easydeploytest" target="_blank">
+      <div class="sb-icon">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.667A8.333 8.333 0 0 0 1.667 10c0 3.682 2.387 6.805 5.698 7.907.416.077.57-.18.57-.4v-1.4c-2.317.503-2.806-1.117-2.806-1.117-.378-.962-.924-1.218-.924-1.218-.755-.517.057-.506.057-.506.835.059 1.274.858 1.274.858.742 1.27 1.947.903 2.422.691.075-.537.29-.903.528-1.11-1.85-.21-3.795-.925-3.795-4.116 0-.909.325-1.652.858-2.234-.086-.21-.372-1.057.081-2.204 0 0 .7-.224 2.292.854A7.97 7.97 0 0 1 10 5.5c.709.003 1.422.096 2.088.281 1.59-1.078 2.29-.854 2.29-.854.453 1.147.168 1.994.082 2.204.534.582.857 1.325.857 2.234 0 3.2-1.949 3.904-3.804 4.11.3.257.566.766.566 1.544v2.289c0 .222.152.48.574.399A8.335 8.335 0 0 0 18.333 10 8.333 8.333 0 0 0 10 1.667z"/></svg>
       </div>
-      <span class="sidebar-nav-label">GitHub</span>
+      <span class="sb-label">GitHub</span>
     </a>
-    <a class="sidebar-nav-link" href="#" onclick="return false">
-      <div class="sidebar-nav-icon">
+  </nav>
+
+  <div class="sb-bottom">
+    <hr class="sb-hr">
+    <button class="sb-link" id="notif-btn" onclick="openNotif()">
+      <div class="sb-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 0 0-6 6v3l-1.5 2.5A1 1 0 0 0 3.5 15h13a1 1 0 0 0 .85-1.53L16 11V8a6 6 0 0 0-6-6zm0 16a2 2 0 0 0 2-2H8a2 2 0 0 0 2 2z"/></svg>
+      </div>
+      <span class="sb-label">Notifications</span>
+      <span class="sb-badge hidden" id="notif-badge">0</span>
+    </button>
+    <a class="sb-link" href="#" onclick="return false">
+      <div class="sb-icon">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="3"/><path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42"/></svg>
       </div>
-      <span class="sidebar-nav-label">Settings</span>
+      <span class="sb-label">Settings</span>
     </a>
   </div>
 </nav>
 
-<!-- ── Notification panel ── -->
-<div class="notif-panel" id="notif-panel">
-  <div class="notif-panel-header">
-    <span class="notif-panel-title">Notifications</span>
-    <button class="notif-close-btn" onclick="toggleNotifPanel()">×</button>
+<!-- ── Notification drawer (right side) ── -->
+<div class="notif-overlay" id="notif-overlay" onclick="closeNotif()"></div>
+<div class="notif-drawer" id="notif-drawer">
+  <div class="notif-head">
+    <span class="notif-head-title">Notifications</span>
+    <button class="notif-close" onclick="closeNotif()">×</button>
   </div>
   <div class="notif-list" id="notif-list">
     <div class="notif-empty"><div class="notif-empty-icon">🔔</div><p>No notifications yet</p></div>
   </div>
 </div>
 
-<!-- ── Toast container ── -->
-<div class="toast-container" id="toast-container"></div>
+<!-- ── Toasts ── -->
+<div class="toast-wrap" id="toast-wrap"></div>
 
 <!-- ── Main ── -->
-<div class="app-root">
-  <main>
-    <header class="page-header">
-      <h1>Applications</h1>
-      <span class="page-subtitle">Live status of deployed apps. Use the panel to create a new app — one API call provisions everything.</span>
-    </header>
+<div class="main">
+  <header class="page-header">
+    <h1>Applications</h1>
+    <span class="page-sub">Live status of deployed apps. Use the panel to create a new app — one API call provisions everything.</span>
+  </header>
 
-    <article class="page-article">
-      <div class="content-layout">
+  <div class="page-body">
 
-        <!-- ── Wizard panel ── -->
-        <aside class="wizard-panel">
-          <div class="wizard-panel-header">
-            <p class="wizard-panel-title">Deploy New App</p>
-          </div>
+    <!-- Wizard panel -->
+    <aside class="wizard-panel">
+      <p class="wp-title">Deploy New App</p>
+      <div class="wp-underline"></div>
 
-          <div class="step-dots">
-            <div class="step-dot active" id="d0"></div>
-            <div class="step-dot" id="d1"></div>
-            <div class="step-dot" id="d2"></div>
-          </div>
-
-          <!-- Form -->
-          <div class="pane active" id="pane-form">
-            <div class="field">
-              <label class="field-label">App name</label>
-              <input id="f-name" type="text" placeholder="my-cool-app" autocomplete="off" oninput="onName()" />
-              <div class="field-hint">Lowercase, hyphens ok, at least 5 chars</div>
-              <div class="field-err" id="name-err"></div>
-            </div>
-            <div class="row-2">
-              <div class="field">
-                <label class="field-label">Team</label>
-                <input id="f-team" type="text" value="easy-deploy" />
-              </div>
-              <div class="field">
-                <label class="field-label">Port</label>
-                <input id="f-port" type="number" value="3000" min="1" max="65535" />
-              </div>
-            </div>
-            <button class="btn-primary" onclick="startCreate()">Create &amp; Deploy →</button>
-          </div>
-
-          <!-- Progress -->
-          <div class="pane" id="pane-prog">
-            <div class="prog-label" id="prog-title">Deploying…</div>
-            <div id="prog-list"></div>
-          </div>
-
-          <!-- Result -->
-          <div class="pane" id="pane-result">
-            <div class="result-headline" id="r-head"></div>
-            <div class="result-sub">Build takes ~2 min. Watch the new card appear in the grid.</div>
-            <div id="r-links"></div>
-            <button class="btn-secondary" onclick="reset()">Deploy another app</button>
-          </div>
-        </aside>
-
-        <!-- ── Card grid ── -->
-        <div class="card-grid" id="card-grid">
-          <div class="loading-row">
-            <div style="width:22px;height:22px;border-radius:50%;background:var(--color-primary-light);display:flex;align-items:center;justify-content:center;animation:rot 1.2s linear infinite;font-size:13px;color:var(--color-primary)">↻</div>
-            Loading apps…
-          </div>
-        </div>
-
+      <div class="step-dots">
+        <div class="step-dot active" id="d0"></div>
+        <div class="step-dot" id="d1"></div>
+        <div class="step-dot" id="d2"></div>
       </div>
-    </article>
-  </main>
+
+      <!-- Form -->
+      <div class="pane active" id="pane-form">
+        <div class="field">
+          <label class="f-label">App name</label>
+          <input id="f-name" type="text" placeholder="my-cool-app" autocomplete="off" oninput="onName()"/>
+          <div class="f-hint">Lowercase, hyphens ok, at least 5 chars</div>
+          <div class="f-err" id="name-err"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label class="f-label">Team</label><input id="f-team" type="text" value="easy-deploy"/></div>
+          <div class="field"><label class="f-label">Port</label><input id="f-port" type="number" value="3000" min="1" max="65535"/></div>
+        </div>
+        <button class="btn-cta" onclick="startCreate()">Create &amp; Deploy →</button>
+      </div>
+
+      <!-- Progress -->
+      <div class="pane" id="pane-prog">
+        <div class="prog-label" id="prog-title">Deploying…</div>
+        <div id="prog-list"></div>
+      </div>
+
+      <!-- Result -->
+      <div class="pane" id="pane-result">
+        <div class="result-head" id="r-head"></div>
+        <div class="result-sub">Build takes ~2 min. Watch the new card appear in the grid.</div>
+        <div id="r-links"></div>
+        <button class="btn-ghost" onclick="reset()">Deploy another app</button>
+      </div>
+    </aside>
+
+    <!-- Card grid -->
+    <div class="card-grid" id="card-grid">
+      <div style="display:flex;align-items:center;gap:12px;padding:40px 0;color:var(--text-secondary)">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;animation:spin 1.2s linear infinite;font-size:13px;color:var(--primary)">↻</div>
+        Loading apps…
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
@@ -392,25 +369,23 @@ const STEPS = {
   set_secret:  'Provision deploy credentials',
 }
 
-const CARD_GRADIENTS = [
-  'linear-gradient(135deg,#0D2497 0%,#1456E0 60%,#4A90D9 100%)',
-  'linear-gradient(135deg,#0D2497 0%,#1456E0 100%)',
-  'linear-gradient(135deg,#1456E0 0%,#0D2497 50%,#071660 100%)',
-  'linear-gradient(135deg,#071660 0%,#1456E0 100%)',
+const GRADS = [
+  'linear-gradient(160deg,#0D2497 0%,#1456E0 70%,#3a7bd5 100%)',
+  'linear-gradient(160deg,#071660 0%,#1456E0 100%)',
+  'linear-gradient(160deg,#0D2497 0%,#2563eb 100%)',
+  'linear-gradient(160deg,#1456E0 0%,#0D2497 60%,#06124a 100%)',
 ]
 
 let appName = ''
 
-function dot(i, s) {
-  document.getElementById('d'+i).className = 'step-dot'+(s?' '+s:'')
-}
-function pane(id) {
+function dot(i, s) { document.getElementById('d'+i).className = 'step-dot'+(s?' '+s:'') }
+function showPane(id) {
   ['pane-form','pane-prog','pane-result'].forEach(p => document.getElementById(p).classList.remove('active'))
   document.getElementById(id).classList.add('active')
 }
 
 function onName() {
-  const v   = document.getElementById('f-name').value
+  const v = document.getElementById('f-name').value
   const err = document.getElementById('name-err')
   const inp = document.getElementById('f-name')
   if (v && !/^[a-z][a-z0-9-]{4,}$/.test(v)) {
@@ -422,9 +397,9 @@ function onName() {
 
 function reset() {
   dot(0,'active'); dot(1,''); dot(2,'')
-  pane('pane-form')
-  document.getElementById('f-name').value = ''
-  document.getElementById('f-name').classList.remove('err')
+  showPane('pane-form')
+  const n = document.getElementById('f-name')
+  n.value = ''; n.classList.remove('err')
   document.getElementById('name-err').style.display = 'none'
 }
 
@@ -436,7 +411,7 @@ async function startCreate() {
   if (!/^[a-z][a-z0-9-]{4,}$/.test(name)) { onName(); return }
   appName = name
   dot(0,'done'); dot(1,'active'); dot(2,'')
-  pane('pane-prog')
+  showPane('pane-prog')
   document.getElementById('prog-title').textContent = 'Deploying ' + name + '…'
 
   const list = document.getElementById('prog-list')
@@ -447,34 +422,33 @@ async function startCreate() {
     if (rows[key]) return
     const d = document.createElement('div')
     d.className = 'prog-row'
-    d.innerHTML = `<div class="prog-icon pi-wait" id="pi-${key}">○</div><div class="prog-text" id="pt-${key}">${STEPS[key] ?? key}</div>`
+    d.innerHTML = `<div class="prog-icon pi-wait" id="pi-${key}">○</div><div class="prog-text" id="pt-${key}">${STEPS[key]??key}</div>`
     list.appendChild(d); rows[key] = d
   }
   Object.keys(STEPS).forEach(mkRow)
 
   function upd(key, status, msg) {
     mkRow(key)
-    const icon = document.getElementById('pi-' + key)
-    const text = document.getElementById('pt-' + key)
-    const m = { running: ['pi-run','↻'], done: ['pi-done','✓'], error: ['pi-err','✗'] }
-    const [cls, ch] = m[status] ?? ['pi-wait','○']
-    icon.className = 'prog-icon ' + cls; icon.textContent = ch
-    if (msg) { text.textContent = msg; text.className = 'prog-text' + (status === 'done' ? ' done' : '') }
+    const icon = document.getElementById('pi-'+key)
+    const text = document.getElementById('pt-'+key)
+    const m = {running:['pi-run','↻'], done:['pi-done','✓'], error:['pi-err','✗']}
+    const [cls,ch] = m[status] ?? ['pi-wait','○']
+    icon.className = 'prog-icon '+cls; icon.textContent = ch
+    if (msg) { text.textContent = msg; text.className = 'prog-text'+(status==='done'?' done':'') }
   }
 
   try {
     const res = await fetch('/api/create-app', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, team, port }),
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({name, team, port}),
     })
     if (!res.ok) { const e = await res.json(); throw new Error(e.error ?? 'Server error') }
     const reader = res.body.getReader(), dec = new TextDecoder()
     let buf = '', result = null
     while (true) {
-      const { done, value } = await reader.read()
+      const {done, value} = await reader.read()
       if (done) break
-      buf += dec.decode(value, { stream: true })
+      buf += dec.decode(value, {stream:true})
       const lines = buf.split('\n'); buf = lines.pop()
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue
@@ -486,7 +460,7 @@ async function startCreate() {
     }
     if (!result) throw new Error('No result received')
     showResult(result)
-  } catch (e) {
+  } catch(e) {
     const el = document.createElement('div')
     el.className = 'err-bar'; el.textContent = '✗ ' + e.message
     list.appendChild(el)
@@ -495,61 +469,56 @@ async function startCreate() {
 
 function showResult(r) {
   dot(1,'done'); dot(2,'active')
-  pane('pane-result')
+  showPane('pane-result')
   document.getElementById('r-head').textContent = appName + ' is deploying 🚀'
   const links = [
-    ['GitHub repo',          r.repo],
-    ['Actions (live log)',   r.actions_url],
-    ['Dev URL (~2 min)',     r.dev_url],
-    ['ArgoCD',               r.argocd_url],
-    ['Grafana',              r.grafana_url],
+    ['GitHub repo',        r.repo],
+    ['Actions (live log)', r.actions_url],
+    ['Dev URL (~2 min)',   r.dev_url],
+    ['ArgoCD',             r.argocd_url],
+    ['Grafana',            r.grafana_url],
   ]
-  document.getElementById('r-links').innerHTML = links.map(([l, u]) => `
-    <a class="link-card" href="${u}" target="_blank">
-      <div>
-        <div class="lc-label">${l}</div>
-        <div class="lc-url">${u.replace('https://','')}</div>
-      </div>
+  document.getElementById('r-links').innerHTML = links.map(([l,u]) =>
+    `<a class="link-card" href="${u}" target="_blank">
+      <div><div class="lc-label">${l}</div><div class="lc-url">${u.replace('https://','')}</div></div>
       <span class="lc-arr">↗</span>
     </a>`).join('')
   loadApps()
 }
 
-/* ── App cards ── */
+/* ── Card grid ── */
 function healthDot(h) {
-  const cls = h === 'Healthy' ? 'sdot-green' : h === 'Progressing' ? 'sdot-yellow' : h === 'Degraded' ? 'sdot-red' : 'sdot-gray'
-  return `<span class="sdot ${cls}"></span>`
+  const c = h==='Healthy'?'dot-green':h==='Progressing'?'dot-yellow':h==='Degraded'?'dot-red':'dot-gray'
+  return `<span class="dot ${c}"></span>`
 }
-
 function envChip(env, label) {
   if (!env) return `<span class="env-chip chip-gray">${label}: —</span>`
-  const h = env.health ?? 'Unknown'
-  return `<span class="env-chip">${healthDot(h)} ${label}: ${h}</span>`
+  return `<span class="env-chip">${healthDot(env.health??'Unknown')} ${label}: ${env.health??'Unknown'}</span>`
 }
 
 function buildCard(app, idx) {
-  const grad = CARD_GRADIENTS[idx % CARD_GRADIENTS.length]
-  const devH  = app.dev?.health  ?? 'Unknown'
-  const badgeCls = devH === 'Healthy' ? 'sdot-green' : devH === 'Progressing' ? 'sdot-yellow' : devH === 'Degraded' ? 'sdot-red' : 'sdot-gray'
-
+  const grad = GRADS[idx % GRADS.length]
+  const dh = app.dev?.health ?? 'Unknown'
+  const dc = dh==='Healthy'?'dot-green':dh==='Progressing'?'dot-yellow':dh==='Degraded'?'dot-red':'dot-gray'
   return `
   <div class="app-card">
-    <div class="app-card-header" style="background:${grad}">
-      <div class="app-card-health-badge"><span class="sdot ${badgeCls}"></span>${devH}</div>
-      <div class="app-card-header-name">${app.name}</div>
+    <div class="card-img" style="background:${grad}">
+      <div class="card-status-badge"><span class="dot ${dc}"></span>${dh}</div>
+      <div class="card-img-name">${app.name}</div>
     </div>
-    <div class="app-card-body">
-      <div class="app-card-title">${app.name}</div>
-      <div class="app-card-envs">
-        ${envChip(app.dev,  'Dev')}
-        ${envChip(app.prod, 'Prod')}
+    <div class="card-body">
+      <div class="card-title">${app.name}</div>
+      <div class="card-envs">
+        ${envChip(app.dev,'Dev')}
+        ${envChip(app.prod,'Prod')}
       </div>
-      <div class="app-card-links">
-        <a class="app-lnk al-dev"  href="${app.links.dev}"       target="_blank">Dev</a>
-        <a class="app-lnk al-prod" href="${app.links.prod}"      target="_blank">Prod</a>
-        <a class="app-lnk al-argo" href="${app.links.argocd}"    target="_blank">ArgoCD</a>
-        <a class="app-lnk al-graf" href="${app.links.grafana}"   target="_blank">Grafana</a>
-        <a class="app-lnk al-inf"  href="${app.links.infisical}" target="_blank">Infisical</a>
+      <p class="card-desc">${app.name} · dev &amp; prod environments</p>
+      <div class="card-links">
+        <a class="card-lnk" href="${app.links.dev}"       target="_blank">Dev <span class="card-lnk-arrow">›</span></a>
+        <a class="card-lnk" href="${app.links.prod}"      target="_blank">Prod <span class="card-lnk-arrow">›</span></a>
+        <a class="card-lnk" href="${app.links.argocd}"    target="_blank">ArgoCD <span class="card-lnk-arrow">›</span></a>
+        <a class="card-lnk" href="${app.links.grafana}"   target="_blank">Grafana <span class="card-lnk-arrow">›</span></a>
+        <a class="card-lnk" href="${app.links.infisical}" target="_blank">Infisical <span class="card-lnk-arrow">›</span></a>
       </div>
     </div>
   </div>`
@@ -560,108 +529,85 @@ async function loadApps() {
   try {
     const apps = await fetch('/api/apps').then(r => r.json())
     if (!Array.isArray(apps) || !apps.length) {
-      grid.innerHTML = `<div class="empty-card"><div class="empty-icon">🚀</div><p>No apps deployed yet.<br>Use the panel to create your first app.</p></div>`
+      grid.innerHTML = `<div class="grid-empty"><div class="grid-empty-icon">🚀</div><p>No apps deployed yet.<br>Use the panel to create your first app.</p></div>`
       return
     }
-    grid.innerHTML = apps.map((a, i) => buildCard(a, i)).join('')
-  } catch (e) {
-    grid.innerHTML = `<div class="empty-card" style="color:#F50057">Error loading apps: ${e}</div>`
+    grid.innerHTML = apps.map((a,i) => buildCard(a,i)).join('')
+  } catch(e) {
+    grid.innerHTML = `<div class="grid-empty" style="color:var(--error)">Error loading apps: ${e}</div>`
   }
 }
 
-document.getElementById('f-name').addEventListener('keydown', e => { if (e.key === 'Enter') startCreate() })
-loadApps()
-setInterval(loadApps, 15000)
-
 /* ── Notifications ── */
-let unreadCount = 0
-let notifPanelOpen = false
-const seenIds = new Set()
+let unread = 0, panelOpen = false
+const seen = new Set()
 
 function relTime(ts) {
-  const s = Math.floor((Date.now() - ts) / 1000)
-  if (s < 60)  return 'just now'
-  if (s < 3600) return Math.floor(s/60) + 'm ago'
-  if (s < 86400) return Math.floor(s/3600) + 'h ago'
+  const s = Math.floor((Date.now()-ts)/1000)
+  if (s<60) return 'just now'
+  if (s<3600) return Math.floor(s/60)+'m ago'
+  if (s<86400) return Math.floor(s/3600)+'h ago'
   return new Date(ts).toLocaleDateString()
 }
 
-function renderNotification(n, isNew = false) {
-  const tags = (n.tags ?? []).map(t => `<span class="notif-tag">${t}</span>`).join('')
-  const div = document.createElement('div')
-  div.className = 'notif-item' + (isNew ? ' unread' : '')
-  div.id = 'notif-' + n.id
-  div.innerHTML = `
-    <div class="notif-item-title">${n.title}</div>
-    <div class="notif-item-body">${n.body}</div>
-    ${tags ? `<div class="notif-tags">${tags}</div>` : ''}
-    <div class="notif-item-time">${relTime(n.ts)}</div>`
-  return div
+function openNotif() {
+  panelOpen = true
+  document.getElementById('notif-drawer').classList.add('open')
+  document.getElementById('notif-overlay').classList.add('open')
+  unread = 0
+  document.getElementById('notif-badge').classList.add('hidden')
+  document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'))
+}
+function closeNotif() {
+  panelOpen = false
+  document.getElementById('notif-drawer').classList.remove('open')
+  document.getElementById('notif-overlay').classList.remove('open')
 }
 
-function addNotification(n, isNew = false) {
-  if (seenIds.has(n.id)) return
-  seenIds.add(n.id)
-
+function addNotif(n, isNew=false) {
+  if (seen.has(n.id)) return
+  seen.add(n.id)
   const list = document.getElementById('notif-list')
-  // remove empty state
   const empty = list.querySelector('.notif-empty')
   if (empty) empty.remove()
-
-  list.prepend(renderNotification(n, isNew))
-
-  if (isNew) {
-    if (!notifPanelOpen) {
-      unreadCount++
-      const badge = document.getElementById('notif-badge')
-      badge.textContent = unreadCount > 99 ? '99+' : unreadCount
-      badge.classList.remove('hidden')
-      document.getElementById('notif-btn').style.color = '#fff'
-    }
+  const tags = (n.tags??[]).map(t => `<span class="ni-tag">${t}</span>`).join('')
+  const el = document.createElement('div')
+  el.className = 'notif-item'+(isNew&&!panelOpen?' unread':'')
+  el.id = 'n-'+n.id
+  el.innerHTML = `<div class="ni-title">${n.title}</div><div class="ni-body">${n.body}</div>${tags?`<div class="ni-tags">${tags}</div>`:''}<div class="ni-time">${relTime(n.ts)}</div>`
+  list.prepend(el)
+  if (isNew && !panelOpen) {
+    unread++
+    const badge = document.getElementById('notif-badge')
+    badge.textContent = unread>99?'99+':unread
+    badge.classList.remove('hidden')
     showToast(n)
   }
 }
 
 function showToast(n) {
-  const container = document.getElementById('toast-container')
+  const wrap = document.getElementById('toast-wrap')
   const t = document.createElement('div')
   t.className = 'toast'
   t.innerHTML = `<div class="toast-title">${n.title}</div><div class="toast-body">${n.body}</div>`
-  container.appendChild(t)
-  setTimeout(() => {
-    t.classList.add('hiding')
-    t.addEventListener('animationend', () => t.remove())
-  }, 5000)
+  wrap.appendChild(t)
+  setTimeout(() => { t.classList.add('out'); t.addEventListener('animationend', () => t.remove()) }, 5000)
 }
 
-function toggleNotifPanel() {
-  notifPanelOpen = !notifPanelOpen
-  document.getElementById('notif-panel').classList.toggle('open', notifPanelOpen)
-  if (notifPanelOpen) {
-    unreadCount = 0
-    document.getElementById('notif-badge').classList.add('hidden')
-    // remove unread highlights
-    document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'))
-  }
-}
-
-function connectEvents() {
+function connectSSE() {
   const es = new EventSource('/api/events')
   es.onmessage = e => {
     const msg = JSON.parse(e.data)
-    if (msg.type === 'catchup') {
-      msg.notifications.forEach(n => addNotification(n, false))
-    } else if (msg.type === 'notification') {
-      addNotification(msg.notification, true)
-    }
+    if (msg.type==='catchup') msg.notifications.forEach(n => addNotif(n, false))
+    else if (msg.type==='notification') addNotif(msg.notification, true)
   }
-  es.onerror = () => {
-    es.close()
-    setTimeout(connectEvents, 5000)  // reconnect
-  }
+  es.onerror = () => { es.close(); setTimeout(connectSSE, 5000) }
 }
 
-connectEvents()
+document.getElementById('f-name').addEventListener('keydown', e => { if(e.key==='Enter') startCreate() })
+loadApps()
+setInterval(loadApps, 15000)
+connectSSE()
 </script>
 </body>
 </html>
