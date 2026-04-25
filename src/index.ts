@@ -152,6 +152,10 @@ new Elysia()
       exporter: new OTLPMetricExporter({ url: `${OTLP_ENDPOINT}/v1/metrics` }),
       exportIntervalMillis: 10000,
     }),
+    checkIfShouldTrace: (req) => {
+      const url = new URL(req.url)
+      return !['/healthz', '/health', '/readyz', '/livez'].includes(url.pathname)
+    },
   }))
   .use(staticPlugin({ assets: 'public', prefix: '/public' }))
   .get('/', () => new Response(html, { headers: { 'Content-Type': 'text/html' } }))
