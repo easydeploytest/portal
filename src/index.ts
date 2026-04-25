@@ -1,3 +1,7 @@
+import { opentelemetry } from '@elysiajs/opentelemetry'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { Elysia, t } from 'elysia'
 import { staticPlugin } from '@elysiajs/static'
 import { readFileSync } from 'fs'
@@ -138,7 +142,17 @@ function sseStream(handler: (send: (event: object) => void) => Promise<void>) {
 // ── App ──────────────────────────────────────────────────────────────────────
 const html = readFileSync(join(import.meta.dir, 'index.html'), 'utf8')
 
+const OTLP_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://otel-collector-opentelemetry-collector.easy-deploy.svc.cluster.local:4318'
+
 new Elysia()
+  .use(opentelemetry({
+    serviceName: process.env.OTEL_SERVICE_NAME ?? 'portal',
+    traceExporter: new OTLPTraceExporter({ url: `${OTLP_ENDPOINT}/v1/traces` }),
+    metricReader: new PeriodicExportingMetricReader({
+      exporter: new OTLPMetricExporter({ url: `${OTLP_ENDPOINT}/v1/metrics` }),
+      exportIntervalMillis: 10000,
+    }),
+  }))
   .use(staticPlugin({ assets: 'public', prefix: '/public' }))
   .get('/', () => new Response(html, { headers: { 'Content-Type': 'text/html' } }))
   .get('/healthz', () => ({ status: 'ok' }))
