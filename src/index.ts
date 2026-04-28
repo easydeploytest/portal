@@ -88,6 +88,7 @@ async function fetchApps() {
       argocd:   `${ARGOCD_URL}/applications/${app.name}-dev`,
       grafana:  `${GRAFANA_URL}/d/easydeploy-${app.name}/${app.name}`,
       infisical: `${INFISICAL_URL}/organizations/${INFISICAL_ORG_ID}/projects/secret-management`,
+      github:   `https://github.com/${GH_ORG}/${app.name}`,
     },
   }))
 }

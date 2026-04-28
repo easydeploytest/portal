@@ -510,18 +510,17 @@ function buildCard(app, idx) {
       <div class="card-img-name">${app.name}</div>
     </div>
     <div class="card-body">
-      <div class="card-title">${app.name}</div>
       <div class="card-envs">
         ${envChip(app.dev,'Dev')}
         ${envChip(app.prod,'Prod')}
       </div>
-      <p class="card-desc">${app.name} · dev &amp; prod environments</p>
       <div class="card-links">
         <a class="card-lnk" href="${app.links.dev}"       target="_blank">Dev <span class="card-lnk-arrow">›</span></a>
         <a class="card-lnk" href="${app.links.prod}"      target="_blank">Prod <span class="card-lnk-arrow">›</span></a>
         <a class="card-lnk" href="${app.links.argocd}"    target="_blank">ArgoCD <span class="card-lnk-arrow">›</span></a>
         <a class="card-lnk" href="${app.links.grafana}"   target="_blank">Grafana <span class="card-lnk-arrow">›</span></a>
         <a class="card-lnk" href="${app.links.infisical}" target="_blank">Infisical <span class="card-lnk-arrow">›</span></a>
+        <a class="card-lnk" href="${app.links.github}"    target="_blank">GitHub <span class="card-lnk-arrow">›</span></a>
       </div>
     </div>
   </div>`
