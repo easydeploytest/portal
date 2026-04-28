@@ -260,22 +260,40 @@ new Elysia()
         send({ step: 'wait_init', message: 'Repo ready', status: 'done' })
 
         // ── Step 3: update app.yaml ──────────────────────────────────────────
-        send({ step: 'configure', message: `Writing app.yaml (name=${name}, team=${team}, port=${port})…`, status: 'running' })
+        send({ step: 'configure', message: `Writing app.yaml and RUNBOOK.md (name=${name}, team=${team}, port=${port})…`, status: 'running' })
 
-        const fileRes  = await fetch(`https://api.github.com/repos/${repoFull}/contents/app.yaml`, { headers: ghHeaders() })
-        const fileData = await fileRes.json() as { sha: string }
-        const newYaml  = `name: ${name}\nteam: ${team}\nport: ${port}\n`
+        const [fileRes, runbookRes] = await Promise.all([
+          fetch(`https://api.github.com/repos/${repoFull}/contents/app.yaml`, { headers: ghHeaders() }),
+          fetch(`https://api.github.com/repos/${repoFull}/contents/RUNBOOK.md`, { headers: ghHeaders() }),
+        ])
+        const fileData    = await fileRes.json()    as { sha: string }
+        const runbookData = await runbookRes.json() as { sha: string; content?: string }
+        const newYaml = `name: ${name}\nteam: ${team}\nport: ${port}\n`
+        const newRunbook  = Buffer.from(runbookData.content ?? '', 'base64')
+          .toString('utf8')
+          .replaceAll('APP_NAME', name)
 
-        await fetch(`https://api.github.com/repos/${repoFull}/contents/app.yaml`, {
-          method: 'PUT',
-          headers: ghHeaders(),
-          body: JSON.stringify({
-            message: 'feat: configure app',
-            content: Buffer.from(newYaml).toString('base64'),
-            sha: fileData.sha,
+        await Promise.all([
+          fetch(`https://api.github.com/repos/${repoFull}/contents/app.yaml`, {
+            method: 'PUT',
+            headers: ghHeaders(),
+            body: JSON.stringify({
+              message: 'feat: configure app',
+              content: Buffer.from(newYaml).toString('base64'),
+              sha: fileData.sha,
+            }),
           }),
-        })
-        send({ step: 'configure', message: 'app.yaml committed — deploy workflow triggered', status: 'done' })
+          fetch(`https://api.github.com/repos/${repoFull}/contents/RUNBOOK.md`, {
+            method: 'PUT',
+            headers: ghHeaders(),
+            body: JSON.stringify({
+              message: 'feat: configure app',
+              content: Buffer.from(newRunbook).toString('base64'),
+              sha: runbookData.sha,
+            }),
+          }),
+        ])
+        send({ step: 'configure', message: 'app.yaml and RUNBOOK.md committed — deploy workflow triggered', status: 'done' })
 
         // ── Step 4: set GH_PAT secret on new repo ───────────────────────────
         send({ step: 'set_secret', message: 'Provisioning GH_PAT secret on repo…', status: 'running' })
