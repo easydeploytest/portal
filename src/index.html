@@ -191,19 +191,6 @@
     .pipe-links { margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px; display: none; }
     .pipe-links.show { display: block; }
     .pl-heading { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px; }
-    .pl-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-    .pl-link {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
-      padding: 8px 12px; text-decoration: none; transition: border-color .15s, background .15s;
-      opacity: 0; transform: translateY(6px);
-      transition: opacity .3s, transform .3s, border-color .15s, background .15s;
-    }
-    .pl-link.visible { opacity: 1; transform: translateY(0); }
-    .pl-link:hover { border-color: var(--primary); background: var(--primary-light); }
-    .pl-link-icon { font-size: 16px; line-height: 1; }
-    .pl-link-label { font-size: 12px; font-weight: 600; color: var(--text); font-family: var(--font-h); }
-    .pl-link-url { font-size: 10px; font-family: monospace; color: var(--primary-muted); margin-top: 1px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     /* success state */
     .pipe-success { display: none; }
@@ -401,7 +388,7 @@
         <!-- Links (appear progressively) -->
         <div class="pipe-links" id="pipe-links">
           <div class="pl-heading">Quick links</div>
-          <div class="pl-grid" id="pl-grid"></div>
+          <div class="card-links" id="pl-grid"></div>
         </div>
 
         <!-- Success banner (appears after deploy) -->
@@ -480,15 +467,13 @@ function setStep(key, status, msg) {
   if (msg && sm) sm.textContent = msg
 }
 
-function showLink(icon, label, url) {
+function showLink(label, url) {
   if (!url) return
-  const grid = document.getElementById('pl-grid')
   document.getElementById('pipe-links').classList.add('show')
   const a = document.createElement('a')
-  a.className = 'pl-link'; a.href = url; a.target = '_blank'
-  a.innerHTML = `<span class="pl-link-icon">${icon}</span><div><div class="pl-link-label">${label}</div><div class="pl-link-url">${url.replace('https://','')}</div></div>`
-  grid.appendChild(a)
-  requestAnimationFrame(() => requestAnimationFrame(() => a.classList.add('visible')))
+  a.className = 'card-lnk'; a.href = url; a.target = '_blank'
+  a.innerHTML = `${label} <span class="card-lnk-arrow">›</span>`
+  document.getElementById('pl-grid').appendChild(a)
 }
 
 // ── Wizard notification handler — called for every incoming notification ──────
@@ -499,35 +484,40 @@ function handleDeployNotif(n) {
 
   if (t.includes(`Building: ${app}`)) {
     setStep('build', 'running', 'Cloning repo and building image…')
-    if (deployResult) showLink('🐙','GitHub', deployResult.repo)
-    if (deployResult) showLink('⚙️','Actions', deployResult.actions_url)
+    const si = document.getElementById('si-infisical')
+    const sg = document.getElementById('si-grafana')
+    if (si && !si.className.includes('si-done') && !si.className.includes('si-run')) setStep('infisical', 'running', 'Creating project…')
+    if (sg && !sg.className.includes('si-done') && !sg.className.includes('si-run')) setStep('grafana', 'running', 'Provisioning dashboard…')
+    if (deployResult) showLink('GITHUB', deployResult.repo)
+    if (deployResult) showLink('ACTIONS', deployResult.actions_url)
   } else if (t.includes(`Image ready: ${app}`)) {
     setStep('build', 'running', 'Pushing image to registry…')
+  } else if (t.includes(`Infisical: ${app}`)) {
+    setStep('infisical', 'done', 'Secrets project ready')
+    if (deployResult) showLink('INFISICAL', deployResult.infisical_url)
+  } else if (t.includes(`Grafana: ${app}`)) {
+    setStep('grafana', 'done', 'Dashboard live')
+    if (deployResult) showLink('GRAFANA', deployResult.grafana_url)
   } else if (t.includes(`Rolling out: ${app}`)) {
     setStep('build', 'done', 'Image pushed to registry')
     setStep('rollout', 'running', 'Kubernetes rolling out new pods…')
-    if (deployResult) showLink('🔷','ArgoCD', deployResult.argocd_url)
+    if (deployResult) showLink('ARGOCD', deployResult.argocd_url)
   } else if (t.includes(`Deployed: ${app}`)) {
     setStep('rollout', 'done', 'Deployment successful')
     setStep('live', 'done', 'Pod healthy and serving traffic')
-    setStep('infisical', 'running', 'Creating project and wiring secrets…')
-    setStep('grafana', 'running', 'Provisioning dashboard…')
-    if (deployResult) {
-      showLink('🌐','Dev URL', deployResult.dev_url)
-      showLink('📊','Grafana', deployResult.grafana_url)
-    }
-    // Background tasks run for ~30s after deploy
+    if (deployResult) showLink('DEV', deployResult.dev_url)
+    // Fallback timeouts in case Infisical/Grafana notifications were missed
     setTimeout(() => {
-      setStep('infisical', 'done', 'Secrets project ready')
-      if (deployResult) showLink('🔐','Infisical', deployResult.infisical_url)
-    }, 20000)
+      if (!document.getElementById('si-infisical')?.className.includes('si-done'))
+        setStep('infisical', 'done', 'Secrets project ready')
+    }, 30000)
     setTimeout(() => {
-      setStep('grafana', 'done', 'Dashboard live')
-    }, 35000)
-    // Show success banner
+      if (!document.getElementById('si-grafana')?.className.includes('si-done'))
+        setStep('grafana', 'done', 'Dashboard live')
+    }, 45000)
     document.getElementById('success-title').textContent = app + ' is live on dev!'
     document.getElementById('pipe-success').classList.add('show')
-    document.getElementById('pipe-sub').textContent = 'All done. Background tasks still running.'
+    document.getElementById('pipe-sub').textContent = 'All done.'
     loadApps()
   }
 }
@@ -694,8 +684,8 @@ function addNotif(n, isNew=false) {
   if (seen.has(n.id)) return
   seen.add(n.id)
 
-  // Route to wizard pipeline if relevant
-  if (isNew) handleDeployNotif(n)
+  // Route to wizard pipeline for both live and catchup notifications
+  handleDeployNotif(n)
 
   const list = document.getElementById('notif-list')
   const empty = list.querySelector('.notif-empty')
