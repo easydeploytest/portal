@@ -4,8 +4,8 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { Elysia, t } from 'elysia'
 import { staticPlugin } from '@elysiajs/static'
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs'
+import { join, dirname } from 'path'
 import _sodium from 'libsodium-wrappers'
 
 const ARGOCD_URL      = process.env.ARGOCD_URL      ?? 'https://argocd.easy-deploy.135.181.177.246.nip.io'
@@ -30,14 +30,35 @@ export type Notification = {
   links?: { label: string; url: string }[]
 }
 
-const MAX_STORED = 100
-const notifications: Notification[] = []
+const MAX_STORED = 500
+const DATA_FILE = process.env.NOTIFICATIONS_FILE ?? '/data/notifications.json'
+
+function loadNotifications(): Notification[] {
+  try {
+    if (existsSync(DATA_FILE)) return JSON.parse(readFileSync(DATA_FILE, 'utf8'))
+  } catch { /* start fresh */ }
+  return []
+}
+
+function saveNotifications() {
+  try {
+    mkdirSync(dirname(DATA_FILE), { recursive: true })
+    writeFileSync(DATA_FILE, JSON.stringify(notifications))
+  } catch (e) {
+    console.error('Failed to save notifications:', e)
+  }
+}
+
+const notifications: Notification[] = loadNotifications()
+console.log(`Loaded ${notifications.length} notifications from ${DATA_FILE}`)
+
 const sseClients = new Set<ReadableStreamDefaultController>()
 
 function pushNotification(n: Omit<Notification, 'id' | 'ts'>): Notification {
   const notif: Notification = { id: crypto.randomUUID(), ts: Date.now(), ...n }
   notifications.push(notif)
   if (notifications.length > MAX_STORED) notifications.shift()
+  saveNotifications()
   const payload = `data: ${JSON.stringify({ type: 'notification', notification: notif })}\n\n`
   const encoded = new TextEncoder().encode(payload)
   for (const ctrl of sseClients) {
