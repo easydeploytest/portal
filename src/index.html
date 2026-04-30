@@ -730,7 +730,7 @@ function buildCard(app, idx) {
   const dh = app.dev?.health ?? 'Unknown'
   const dc = dh==='Healthy'?'dot-green':dh==='Progressing'?'dot-yellow':dh==='Degraded'?'dot-red':'dot-gray'
   return `
-  <div class="app-card" onclick="location.hash='#/app/${encodeURIComponent(app.name)}'">
+  <div class="app-card" data-app="${app.name}" onclick="location.hash='#/app/${encodeURIComponent(app.name)}'">
     <div class="card-img" style="background:${grad}">
       <div class="card-status-badge"><span class="dot ${dc}"></span>${dh}</div>
       <div class="card-img-name">${app.name}</div>
@@ -743,6 +743,13 @@ function buildCard(app, idx) {
   </div>`
 }
 
+function patchCardHealth(card, app) {
+  const dh = app.dev?.health ?? 'Unknown'
+  const dc = dh==='Healthy'?'dot-green':dh==='Progressing'?'dot-yellow':dh==='Degraded'?'dot-red':'dot-gray'
+  card.querySelector('.card-status-badge').innerHTML = `<span class="dot ${dc}"></span>${dh}`
+  card.querySelector('.card-envs').innerHTML = envChip(app.dev, 'Dev') + envChip(app.prod, 'Prod')
+}
+
 async function loadApps() {
   const grid = document.getElementById('card-grid')
   try {
@@ -752,24 +759,48 @@ async function loadApps() {
       appsCache = []
       return
     }
-    appsCache = apps
-    grid.innerHTML = apps.map((a,i) => buildCard(a,i)).join('')
 
-    // Stagger cards in
-    animate(grid.querySelectorAll('.app-card'),
-      { opacity: [0, 1], y: [10, 0] },
-      { duration: 0.3, delay: stagger(0.06), easing: 'ease-out' }
-    )
+    const isFirst = appsCache.length === 0
+    const newNames = new Set(apps.map(a => a.name))
 
-    // Refresh app page health if currently viewing one
-    if (currentApp) {
-      const app = apps.find(a => a.name === currentApp)
-      if (app) {
-        document.getElementById('app-hero-pills').innerHTML = envChip(app.dev,'Dev') + envChip(app.prod,'Prod')
+    // Remove cards for apps that disappeared
+    grid.querySelectorAll('.app-card').forEach(c => { if (!newNames.has(c.dataset.app)) c.remove() })
+
+    if (isFirst) {
+      grid.innerHTML = apps.map((a, i) => buildCard(a, i)).join('')
+      animate(grid.querySelectorAll('.app-card'),
+        { opacity: [0, 1], y: [10, 0] },
+        { duration: 0.3, delay: stagger(0.06), easing: 'ease-out' }
+      )
+    } else {
+      const newCards = []
+      apps.forEach((app, i) => {
+        const existing = grid.querySelector(`.app-card[data-app="${app.name}"]`)
+        if (existing) {
+          patchCardHealth(existing, app)
+        } else {
+          const tmp = document.createElement('div')
+          tmp.innerHTML = buildCard(app, i)
+          const card = tmp.firstElementChild
+          grid.appendChild(card)
+          newCards.push(card)
+        }
+      })
+      if (newCards.length) {
+        animate(newCards, { opacity: [0, 1], y: [10, 0] }, { duration: 0.3, easing: 'ease-out' })
       }
     }
+
+    appsCache = apps
+
+    if (currentApp) {
+      const app = apps.find(a => a.name === currentApp)
+      if (app) document.getElementById('app-hero-pills').innerHTML = envChip(app.dev, 'Dev') + envChip(app.prod, 'Prod')
+    }
   } catch(e) {
-    grid.innerHTML = `<div class="grid-empty" style="color:var(--error)">Error loading apps: ${e}</div>`
+    if (!appsCache.length) {
+      grid.innerHTML = `<div class="grid-empty" style="color:var(--error)">Error loading apps: ${e}</div>`
+    }
   }
 }
 
