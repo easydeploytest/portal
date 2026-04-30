@@ -57,6 +57,12 @@
 
     /* ── Main ── */
     .main { padding-left: var(--sidebar-w); min-height: 100vh; }
+
+    /* ── View switching ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── Dashboard view ── */
     .page-header { padding: 28px 24px 12px; display: flex; align-items: center; justify-content: space-between; }
     .page-header-text h1 { font-family: var(--font-h); font-size: 32px; font-weight: 700; line-height: 1.17; color: var(--text); }
     .page-sub { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-top: 8px; display: block; }
@@ -71,7 +77,12 @@
 
     /* ── Card grid ── */
     .card-grid { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
-    .app-card { width: 300px; background: var(--white); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .app-card {
+      width: 300px; background: var(--white); border-radius: 12px; overflow: hidden;
+      display: flex; flex-direction: column; cursor: pointer;
+      transition: box-shadow .2s, transform .2s; opacity: 0;
+    }
+    .app-card:hover { box-shadow: 0 8px 32px rgba(20,86,224,.18); transform: translateY(-2px); }
     .card-img { height: 200px; position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 14px 18px; }
     .card-img::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 75% 15%, rgba(255,255,255,.12) 0%, transparent 55%); pointer-events: none; }
     .card-img-name { font-family: monospace; font-size: 22px; font-weight: 700; color: rgba(255,255,255,.92); position: relative; z-index: 1; word-break: break-all; }
@@ -82,15 +93,73 @@
     .dot-red    { background: var(--error); }
     .dot-gray   { background: var(--primary-muted); }
     .card-body { padding: 16px 24px; display: flex; flex-direction: column; flex: 1; }
-    .card-envs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .card-envs { display: flex; gap: 8px; flex-wrap: wrap; }
     .env-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--primary); color: #fff; font-size: 13px; font-weight: 400; border-radius: 16px; padding: 0 8px; height: 28px; white-space: nowrap; font-family: var(--font-b); }
     .env-chip.chip-gray { background: #eee; color: #999; }
-    .card-links { display: flex; flex-wrap: wrap; gap: 6px; }
     .card-lnk { display: inline-block; background: transparent; border: none; color: var(--primary); font-family: var(--font-h); font-size: 14px; font-weight: 700; letter-spacing: 1.25px; text-transform: uppercase; text-decoration: none; cursor: pointer; padding: 6px 8px; border-radius: 6px; line-height: 24.5px; transition: background .15s; }
     .card-lnk:hover { background: var(--primary-light); }
     .card-lnk-arrow { font-size: 16px; vertical-align: middle; }
     .grid-empty { padding: 80px 0; text-align: center; color: var(--text-secondary); }
     .grid-empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .35; }
+
+    /* ── App detail view ── */
+    .app-hero {
+      height: 220px; position: relative; display: flex; flex-direction: column;
+      justify-content: flex-end; padding: 24px 32px;
+      overflow: hidden;
+    }
+    .app-hero::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 20%, rgba(255,255,255,.1) 0%, transparent 55%); pointer-events: none; }
+    .app-hero-back {
+      position: absolute; top: 24px; left: 32px; z-index: 2;
+      display: flex; align-items: center; gap: 6px;
+      color: rgba(255,255,255,.75); font-size: 13px; font-weight: 500;
+      background: rgba(255,255,255,.12); border: none; border-radius: 20px;
+      padding: 6px 14px; cursor: pointer; backdrop-filter: blur(4px);
+      transition: background .15s, color .15s; font-family: var(--font-b);
+      text-decoration: none;
+    }
+    .app-hero-back:hover { background: rgba(255,255,255,.22); color: #fff; }
+    .app-hero-name { font-family: monospace; font-size: 32px; font-weight: 700; color: #fff; position: relative; z-index: 1; }
+    .app-hero-pills { display: flex; gap: 8px; margin-top: 10px; position: relative; z-index: 1; }
+
+    .app-links-bar {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 0 32px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+    }
+
+    .app-body { padding: 32px; max-width: 860px; }
+    .app-section-title {
+      font-family: var(--font-h); font-size: 18px; font-weight: 700;
+      color: var(--text); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .app-section-count {
+      font-size: 12px; font-weight: 600; color: var(--primary-muted);
+      background: var(--primary-light); border-radius: 10px; padding: 2px 8px;
+    }
+    .app-notifs-empty { padding: 60px 0; text-align: center; color: var(--text-secondary); }
+
+    /* ── Timeline items ── */
+    .tl-item {
+      background: var(--white); border-radius: 10px;
+      border-left: 4px solid var(--primary);
+      padding: 14px 18px; margin-bottom: 10px;
+      display: flex; gap: 14px; align-items: flex-start;
+      opacity: 0;
+    }
+    .tl-item[data-type="success"] { border-left-color: var(--success); }
+    .tl-item[data-type="error"]   { border-left-color: var(--error); }
+    .tl-item[data-type="rolling"] { border-left-color: #d97706; }
+    .tl-item[data-type="secret"]  { border-left-color: #7c3aed; }
+    .tl-item[data-type="metrics"] { border-left-color: #ea580c; }
+
+    .tl-main { flex: 1; min-width: 0; }
+    .tl-title { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4; }
+    .tl-body  { font-size: 13px; color: var(--text-secondary); margin-top: 3px; line-height: 1.5; }
+    .tl-links { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .tl-link  { font-size: 12px; font-weight: 700; font-family: var(--font-h); letter-spacing: .6px; text-transform: uppercase; color: var(--primary); text-decoration: none; padding: 3px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); transition: background .12s; white-space: nowrap; }
+    .tl-link:hover { background: var(--primary-light); border-color: var(--primary); }
+    .tl-time { font-size: 11px; color: var(--primary-muted); white-space: nowrap; padding-top: 2px; flex-shrink: 0; }
 
     /* ── Full-page wizard overlay ── */
     .wizard-overlay {
@@ -102,33 +171,13 @@
       overflow-y: auto;
     }
     .wizard-overlay.open { opacity: 1; pointer-events: all; }
-
-    .wizard-card {
-      background: var(--white); border-radius: 20px;
-      width: 100%; max-width: 760px;
-      box-shadow: 0 24px 80px rgba(9,34,65,.25);
-      overflow: hidden; flex-shrink: 0;
-    }
-
-    /* wizard header bar */
-    .wiz-bar {
-      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
-      padding: 20px 28px; display: flex; align-items: center; justify-content: space-between;
-    }
+    .wizard-card { background: var(--white); border-radius: 20px; width: 100%; max-width: 760px; box-shadow: 0 24px 80px rgba(9,34,65,.25); overflow: hidden; flex-shrink: 0; }
+    .wiz-bar { background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); padding: 20px 28px; display: flex; align-items: center; justify-content: space-between; }
     .wiz-bar-title { font-family: var(--font-h); font-size: 18px; font-weight: 700; color: #fff; }
     .wiz-bar-sub   { font-size: 12px; color: var(--primary-muted); margin-top: 2px; }
-    .wiz-close {
-      background: rgba(255,255,255,.15); border: none; color: #fff;
-      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
-      font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center;
-      transition: background .15s; flex-shrink: 0;
-    }
+    .wiz-close { background: rgba(255,255,255,.15); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: background .15s; flex-shrink: 0; }
     .wiz-close:hover { background: rgba(255,255,255,.25); }
-
-    /* wizard body */
     .wiz-body { padding: 32px 28px; }
-
-    /* form view */
     .wiz-form .f-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 5px; }
     .wiz-form input[type=text], .wiz-form input[type=number] { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 14px; font-family: var(--font-b); color: var(--text); outline: none; transition: border-color .15s; }
     .wiz-form input:focus { border-color: var(--primary); }
@@ -140,66 +189,34 @@
     .wiz-form .row2 .field { flex: 1; }
     .wiz-form .field { margin-bottom: 0; }
     .wiz-form .name-field { margin-bottom: 0; }
-    .btn-cta {
-      width: 100%; background: var(--primary); color: #fff; border: none;
-      border-radius: 8px; padding: 13px; font-family: var(--font-h);
-      font-size: 14px; font-weight: 700; letter-spacing: 1.25px; text-transform: uppercase;
-      cursor: pointer; margin-top: 20px; transition: background .15s;
-    }
+    .btn-cta { width: 100%; background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 13px; font-family: var(--font-h); font-size: 14px; font-weight: 700; letter-spacing: 1.25px; text-transform: uppercase; cursor: pointer; margin-top: 20px; transition: background .15s; }
     .btn-cta:hover { background: var(--primary-dark); }
     .err-bar { background: #FFF0F3; border: 1px solid var(--error); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #c0003a; margin-top: 16px; }
-
-    /* pipeline view */
     .wiz-pipeline { display: none; }
     .wiz-pipeline.active { display: block; }
-
     .pipe-heading { font-family: var(--font-h); font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
     .pipe-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 32px; }
-
     .phase-block { margin-bottom: 28px; }
-    .phase-label {
-      font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-      color: var(--primary-muted); margin-bottom: 10px;
-      display: flex; align-items: center; gap: 8px;
-    }
+    .phase-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--primary-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
     .phase-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-    .step-row {
-      display: flex; align-items: flex-start; gap: 12px;
-      padding: 8px 0; transition: opacity .2s;
-    }
+    .step-row { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; transition: opacity .2s; }
     .step-row.pending { opacity: .45; }
-
-    .step-icon {
-      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 700; margin-top: 1px;
-      transition: background .2s, color .2s;
-    }
+    .step-icon { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; transition: background .2s, color .2s; }
     .si-wait { background: var(--primary-light); color: var(--primary-muted); }
     .si-run  { background: var(--primary); color: #fff; animation: spin 1s linear infinite; }
     .si-done { background: var(--success); color: #fff; }
     .si-err  { background: var(--error); color: #fff; }
-
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .step-info { flex: 1; min-width: 0; }
     .step-title { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.4; }
     .step-msg   { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-
-    /* links grid (appears in pipeline view) */
     .pipe-links { margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px; display: none; }
     .pipe-links.show { display: block; }
     .pl-heading { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px; }
-
-    /* success state */
+    .card-links { display: flex; flex-wrap: wrap; gap: 6px; }
     .pipe-success { display: none; }
     .pipe-success.show { display: block; }
-    .success-banner {
-      background: linear-gradient(135deg, #0a3320 0%, #166534 100%);
-      border-radius: 12px; padding: 20px 24px; margin-bottom: 20px;
-      display: flex; align-items: center; gap: 16px;
-    }
+    .success-banner { background: linear-gradient(135deg, #0a3320 0%, #166534 100%); border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; }
     .success-icon { font-size: 32px; flex-shrink: 0; }
     .success-title { font-family: var(--font-h); font-size: 20px; font-weight: 700; color: #fff; }
     .success-sub { font-size: 13px; color: rgba(255,255,255,.7); margin-top: 3px; }
@@ -257,7 +274,7 @@
   </div>
   <hr class="sb-hr">
   <nav class="sb-nav">
-    <a class="sb-link active" href="/">
+    <a class="sb-link active" id="sb-dashboard" href="#/">
       <div class="sb-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M10.5 1.5a.75.75 0 0 0-1 0L2 8.25V17a1 1 0 0 0 1 1h4v-5h6v5h4a1 1 0 0 0 1-1V8.25L10.5 1.5z"/></svg></div>
       <span class="sb-label">Dashboard</span>
     </a>
@@ -302,7 +319,6 @@
 <!-- ── Full-page wizard overlay ── -->
 <div class="wizard-overlay" id="wizard-overlay">
   <div class="wizard-card">
-
     <div class="wiz-bar">
       <div>
         <div class="wiz-bar-title" id="wiz-bar-title">Deploy New App</div>
@@ -310,10 +326,7 @@
       </div>
       <button class="wiz-close" onclick="closeWizard()">×</button>
     </div>
-
     <div class="wiz-body">
-
-      <!-- Form view -->
       <div class="wiz-form" id="wiz-form">
         <div class="name-field">
           <label class="f-label">App name</label>
@@ -328,70 +341,31 @@
         <button class="btn-cta" onclick="startCreate()">Create &amp; Deploy →</button>
         <div id="form-err"></div>
       </div>
-
-      <!-- Pipeline view -->
       <div class="wiz-pipeline" id="wiz-pipeline">
         <div class="pipe-heading" id="pipe-heading">Deploying…</div>
         <div class="pipe-sub" id="pipe-sub">Setting up your app — this takes about 2 minutes</div>
-
-        <!-- Phase 1: Setup (driven by create-app SSE) -->
         <div class="phase-block">
           <div class="phase-label">Setup</div>
-          <div id="step-create_repo" class="step-row pending">
-            <div class="step-icon si-wait" id="si-create_repo">○</div>
-            <div class="step-info"><div class="step-title">Create GitHub repository</div><div class="step-msg" id="sm-create_repo"></div></div>
-          </div>
-          <div id="step-wait_init" class="step-row pending">
-            <div class="step-icon si-wait" id="si-wait_init">○</div>
-            <div class="step-info"><div class="step-title">Initialise repository</div><div class="step-msg" id="sm-wait_init"></div></div>
-          </div>
-          <div id="step-configure" class="step-row pending">
-            <div class="step-icon si-wait" id="si-configure">○</div>
-            <div class="step-info"><div class="step-title">Write app.yaml + RUNBOOK — triggers deploy</div><div class="step-msg" id="sm-configure"></div></div>
-          </div>
-          <div id="step-set_secret" class="step-row pending">
-            <div class="step-icon si-wait" id="si-set_secret">○</div>
-            <div class="step-info"><div class="step-title">Provision deploy credentials</div><div class="step-msg" id="sm-set_secret"></div></div>
-          </div>
+          <div id="step-create_repo" class="step-row pending"><div class="step-icon si-wait" id="si-create_repo">○</div><div class="step-info"><div class="step-title">Create GitHub repository</div><div class="step-msg" id="sm-create_repo"></div></div></div>
+          <div id="step-wait_init"   class="step-row pending"><div class="step-icon si-wait" id="si-wait_init">○</div><div class="step-info"><div class="step-title">Initialise repository</div><div class="step-msg" id="sm-wait_init"></div></div></div>
+          <div id="step-configure"   class="step-row pending"><div class="step-icon si-wait" id="si-configure">○</div><div class="step-info"><div class="step-title">Write app.yaml — triggers deploy</div><div class="step-msg" id="sm-configure"></div></div></div>
+          <div id="step-set_secret"  class="step-row pending"><div class="step-icon si-wait" id="si-set_secret">○</div><div class="step-info"><div class="step-title">Provision deploy credentials</div><div class="step-msg" id="sm-set_secret"></div></div></div>
         </div>
-
-        <!-- Phase 2: Build & Deploy (driven by portal notifications) -->
         <div class="phase-block">
           <div class="phase-label">Build &amp; Deploy</div>
-          <div id="step-build" class="step-row pending">
-            <div class="step-icon si-wait" id="si-build">○</div>
-            <div class="step-info"><div class="step-title">Build &amp; push Docker image</div><div class="step-msg" id="sm-build"></div></div>
-          </div>
-          <div id="step-rollout" class="step-row pending">
-            <div class="step-icon si-wait" id="si-rollout">○</div>
-            <div class="step-info"><div class="step-title">Rolling out to dev</div><div class="step-msg" id="sm-rollout"></div></div>
-          </div>
-          <div id="step-live" class="step-row pending">
-            <div class="step-icon si-wait" id="si-live">○</div>
-            <div class="step-info"><div class="step-title">Health check — pod live</div><div class="step-msg" id="sm-live"></div></div>
-          </div>
+          <div id="step-build"   class="step-row pending"><div class="step-icon si-wait" id="si-build">○</div><div class="step-info"><div class="step-title">Build &amp; push Docker image</div><div class="step-msg" id="sm-build"></div></div></div>
+          <div id="step-rollout" class="step-row pending"><div class="step-icon si-wait" id="si-rollout">○</div><div class="step-info"><div class="step-title">Rolling out to dev</div><div class="step-msg" id="sm-rollout"></div></div></div>
+          <div id="step-live"    class="step-row pending"><div class="step-icon si-wait" id="si-live">○</div><div class="step-info"><div class="step-title">Health check — pod live</div><div class="step-msg" id="sm-live"></div></div></div>
         </div>
-
-        <!-- Phase 3: Background (auto-complete after deploy) -->
         <div class="phase-block">
           <div class="phase-label">Background</div>
-          <div id="step-infisical" class="step-row pending">
-            <div class="step-icon si-wait" id="si-infisical">○</div>
-            <div class="step-info"><div class="step-title">Infisical secrets project</div><div class="step-msg" id="sm-infisical"></div></div>
-          </div>
-          <div id="step-grafana" class="step-row pending">
-            <div class="step-icon si-wait" id="si-grafana">○</div>
-            <div class="step-info"><div class="step-title">Grafana dashboard</div><div class="step-msg" id="sm-grafana"></div></div>
-          </div>
+          <div id="step-infisical" class="step-row pending"><div class="step-icon si-wait" id="si-infisical">○</div><div class="step-info"><div class="step-title">Infisical secrets project</div><div class="step-msg" id="sm-infisical"></div></div></div>
+          <div id="step-grafana"   class="step-row pending"><div class="step-icon si-wait" id="si-grafana">○</div><div class="step-info"><div class="step-title">Grafana dashboard</div><div class="step-msg" id="sm-grafana"></div></div></div>
         </div>
-
-        <!-- Links (appear progressively) -->
         <div class="pipe-links" id="pipe-links">
           <div class="pl-heading">Quick links</div>
           <div class="card-links" id="pl-grid"></div>
         </div>
-
-        <!-- Success banner (appears after deploy) -->
         <div class="pipe-success" id="pipe-success">
           <div class="success-banner">
             <div class="success-icon">🚀</div>
@@ -402,7 +376,6 @@
           </div>
           <button class="btn-ghost" onclick="resetWizard()">Deploy another app</button>
         </div>
-
       </div>
     </div>
   </div>
@@ -410,24 +383,48 @@
 
 <!-- ── Main ── -->
 <div class="main">
-  <header class="page-header">
-    <div class="page-header-text">
-      <h1>Applications</h1>
-      <span class="page-sub">Live status of deployed apps.</span>
-    </div>
-    <button class="btn-deploy-new" onclick="openWizard()">+ Deploy new app</button>
-  </header>
-  <div class="page-body">
-    <div class="card-grid" id="card-grid">
-      <div style="display:flex;align-items:center;gap:12px;padding:40px 0;color:var(--text-secondary)">
-        <div style="width:22px;height:22px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;animation:spin 1s linear infinite;font-size:13px;color:var(--primary)">↻</div>
-        Loading apps…
+
+  <!-- Dashboard view -->
+  <div id="view-dashboard" class="view active">
+    <header class="page-header">
+      <div class="page-header-text">
+        <h1>Applications</h1>
+        <span class="page-sub">Live status of deployed apps.</span>
+      </div>
+      <button class="btn-deploy-new" onclick="openWizard()">+ Deploy new app</button>
+    </header>
+    <div class="page-body">
+      <div class="card-grid" id="card-grid">
+        <div style="display:flex;align-items:center;gap:12px;padding:40px 0;color:var(--text-secondary)">
+          <div style="width:22px;height:22px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;animation:spin 1s linear infinite;font-size:13px;color:var(--primary)">↻</div>
+          Loading apps…
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- App detail view -->
+  <div id="view-app" class="view">
+    <div class="app-hero" id="app-hero">
+      <a class="app-hero-back" href="#/" id="app-back-btn">← Apps</a>
+      <div class="app-hero-name" id="app-hero-name"></div>
+      <div class="app-hero-pills" id="app-hero-pills"></div>
+    </div>
+    <div class="app-links-bar" id="app-links-bar"></div>
+    <div class="app-body">
+      <div class="app-section-title">
+        Activity
+        <span class="app-section-count" id="app-notifs-count"></span>
+      </div>
+      <div id="app-notifs-list"></div>
+    </div>
+  </div>
+
 </div>
 
-<script>
+<script type="module">
+import { animate, stagger } from 'https://cdn.jsdelivr.net/npm/motion@11/+esm'
+
 const GRADS = [
   'linear-gradient(160deg,#0D2497 0%,#1456E0 70%,#3a7bd5 100%)',
   'linear-gradient(160deg,#071660 0%,#1456E0 100%)',
@@ -435,16 +432,143 @@ const GRADS = [
   'linear-gradient(160deg,#1456E0 0%,#0D2497 60%,#06124a 100%)',
 ]
 
-// ── Wizard state ──────────────────────────────────────────────────────────────
-let deployingApp = null   // app name being deployed — used to match notifications
-let deployResult = null   // result from create-app (urls etc)
+// ── State ─────────────────────────────────────────────────────────────────────
+let deployingApp = null
+let deployResult = null
+let appsCache    = []
+let allNotifs    = []   // every notification ever seen, chronological
+let currentApp   = null // app name currently shown on detail page
 
-function openWizard() {
-  document.getElementById('wizard-overlay').classList.add('open')
+// ── Router ────────────────────────────────────────────────────────────────────
+function route() {
+  const hash = location.hash || '#/'
+  if (hash.startsWith('#/app/')) {
+    const name = decodeURIComponent(hash.slice(6))
+    showAppPage(name)
+  } else {
+    showDashboard()
+  }
 }
-function closeWizard() {
-  document.getElementById('wizard-overlay').classList.remove('open')
+
+window.addEventListener('hashchange', route)
+
+function showDashboard() {
+  const vd = document.getElementById('view-dashboard')
+  const va = document.getElementById('view-app')
+  va.classList.remove('active')
+  vd.classList.add('active')
+  currentApp = null
+  document.getElementById('sb-dashboard').classList.add('active')
+  document.title = 'EasyDeploy Portal'
+  // animate cards back in
+  const cards = vd.querySelectorAll('.app-card')
+  if (cards.length) {
+    animate(cards, { opacity: [0, 1] }, { duration: 0.2, delay: stagger(0.04) })
+  }
 }
+
+function showAppPage(name) {
+  currentApp = name
+  document.title = `${name} — EasyDeploy`
+  document.getElementById('sb-dashboard').classList.remove('active')
+
+  // Populate hero
+  const app = appsCache.find(a => a.name === name)
+  const grad = app ? GRADS[appsCache.indexOf(app) % GRADS.length] : GRADS[0]
+  document.getElementById('app-hero').style.background = grad
+  document.getElementById('app-hero-name').textContent = name
+
+  // Health pills
+  const pills = document.getElementById('app-hero-pills')
+  if (app) {
+    pills.innerHTML = envChip(app.dev, 'Dev') + envChip(app.prod, 'Prod')
+  } else {
+    pills.innerHTML = ''
+  }
+
+  // Links bar
+  const bar = document.getElementById('app-links-bar')
+  if (app) {
+    bar.innerHTML = [
+      ['Dev',       app.links.dev],
+      ['Prod',      app.links.prod],
+      ['ArgoCD',    app.links.argocd],
+      ['Grafana',   app.links.grafana],
+      ['Infisical', app.links.infisical],
+      ['GitHub',    app.links.github],
+    ].map(([label, url]) =>
+      `<a class="card-lnk" href="${url}" target="_blank">${label} <span class="card-lnk-arrow">›</span></a>`
+    ).join('')
+  } else {
+    bar.innerHTML = ''
+  }
+
+  // Render notifications
+  renderAppNotifs(name)
+
+  // Switch views
+  document.getElementById('view-dashboard').classList.remove('active')
+  const va = document.getElementById('view-app')
+  va.classList.add('active')
+
+  // Animate page in
+  animate(va, { opacity: [0, 1] }, { duration: 0.2 })
+
+  // Animate timeline items
+  const items = va.querySelectorAll('.tl-item')
+  if (items.length) {
+    animate(items, { opacity: [0, 1] }, { duration: 0.25, delay: stagger(0.04) })
+  }
+}
+
+// ── Notification type classifier ──────────────────────────────────────────────
+function notifType(title) {
+  if (title.includes('✅'))           return 'success'
+  if (title.includes('❌'))           return 'error'
+  if (title.includes('🔄'))           return 'rolling'
+  if (title.includes('🔐'))           return 'secret'
+  if (title.includes('📊'))           return 'metrics'
+  return 'default'
+}
+
+function notifMatchesApp(n, name) {
+  return (n.tags || []).includes(name) ||
+         (n.title || '').toLowerCase().includes(name.toLowerCase())
+}
+
+function renderAppNotifs(name) {
+  const list  = document.getElementById('app-notifs-list')
+  const count = document.getElementById('app-notifs-count')
+  const items = allNotifs.filter(n => notifMatchesApp(n, name)).reverse()
+
+  count.textContent = items.length ? `${items.length}` : ''
+
+  if (!items.length) {
+    list.innerHTML = '<div class="app-notifs-empty">No activity yet for this app.</div>'
+    return
+  }
+
+  list.innerHTML = items.map(n => tlItemHTML(n)).join('')
+}
+
+function tlItemHTML(n) {
+  const links = (n.links || []).map(l =>
+    `<a class="tl-link" href="${l.url}" target="_blank">${l.label} ›</a>`
+  ).join('')
+  return `
+  <div class="tl-item" data-type="${notifType(n.title)}">
+    <div class="tl-main">
+      <div class="tl-title">${n.title}</div>
+      ${n.body ? `<div class="tl-body">${n.body}</div>` : ''}
+      ${links   ? `<div class="tl-links">${links}</div>` : ''}
+    </div>
+    <div class="tl-time">${relTime(n.ts)}</div>
+  </div>`
+}
+
+// ── Wizard ────────────────────────────────────────────────────────────────────
+window.openWizard = () => document.getElementById('wizard-overlay').classList.add('open')
+window.closeWizard = () => document.getElementById('wizard-overlay').classList.remove('open')
 
 function showPipeline(name) {
   document.getElementById('wiz-form').style.display = 'none'
@@ -476,7 +600,6 @@ function showLink(label, url) {
   document.getElementById('pl-grid').appendChild(a)
 }
 
-// ── Wizard notification handler — called for every incoming notification ──────
 function handleDeployNotif(n) {
   if (!deployingApp) return
   const t = n.title || ''
@@ -506,15 +629,6 @@ function handleDeployNotif(n) {
     setStep('rollout', 'done', 'Deployment successful')
     setStep('live', 'done', 'Pod healthy and serving traffic')
     if (deployResult) showLink('DEV', deployResult.dev_url)
-    // Fallback timeouts in case Infisical/Grafana notifications were missed
-    setTimeout(() => {
-      if (!document.getElementById('si-infisical')?.className.includes('si-done'))
-        setStep('infisical', 'done', 'Secrets project ready')
-    }, 30000)
-    setTimeout(() => {
-      if (!document.getElementById('si-grafana')?.className.includes('si-done'))
-        setStep('grafana', 'done', 'Dashboard live')
-    }, 45000)
     document.getElementById('success-title').textContent = app + ' is live on dev!'
     document.getElementById('pipe-success').classList.add('show')
     document.getElementById('pipe-sub').textContent = 'All done.'
@@ -522,8 +636,7 @@ function handleDeployNotif(n) {
   }
 }
 
-// ── Form ─────────────────────────────────────────────────────────────────────
-function onName() {
+window.onName = () => {
   const v = document.getElementById('f-name').value
   const err = document.getElementById('name-err')
   const inp = document.getElementById('f-name')
@@ -534,7 +647,7 @@ function onName() {
   } else { err.style.display = 'none'; inp.classList.remove('err') }
 }
 
-function resetWizard() {
+window.resetWizard = () => {
   deployingApp = null; deployResult = null
   document.getElementById('wiz-form').style.display = ''
   document.getElementById('wiz-pipeline').classList.remove('active')
@@ -544,24 +657,21 @@ function resetWizard() {
   document.getElementById('f-name').classList.remove('err')
   document.getElementById('name-err').style.display = 'none'
   document.getElementById('form-err').innerHTML = ''
-  // reset pipeline
   ;['create_repo','wait_init','configure','set_secret','build','rollout','live','infisical','grafana'].forEach(k => setStep(k,'wait',''))
   document.getElementById('pipe-links').classList.remove('show')
   document.getElementById('pl-grid').innerHTML = ''
   document.getElementById('pipe-success').classList.remove('show')
 }
 
-async function startCreate() {
+window.startCreate = async () => {
   const name = document.getElementById('f-name').value.trim()
   const team = document.getElementById('f-team').value.trim() || 'easy-deploy'
   const port = parseInt(document.getElementById('f-port').value) || 3000
   if (!name) { document.getElementById('f-name').focus(); return }
-  if (!/^[a-z][a-z0-9-]{4,}$/.test(name)) { onName(); return }
+  if (!/^[a-z][a-z0-9-]{4,}$/.test(name)) { window.onName(); return }
 
   deployingApp = name
   showPipeline(name)
-
-  // show all setup steps as waiting (activated)
   ;['create_repo','wait_init','configure','set_secret'].forEach(k => setStep(k,'wait',''))
 
   try {
@@ -584,7 +694,6 @@ async function startCreate() {
         if (evt.error) throw new Error(evt.error)
         if (evt.done) {
           deployResult = evt
-          // mark remaining setup steps done
           ;['create_repo','wait_init','configure','set_secret'].forEach(k => {
             const icon = document.getElementById('si-' + k)
             if (icon && icon.className.includes('si-wait')) setStep(k, 'done', '')
@@ -605,9 +714,9 @@ async function startCreate() {
   }
 }
 
-document.getElementById('f-name').addEventListener('keydown', e => { if(e.key==='Enter') startCreate() })
+document.getElementById('f-name').addEventListener('keydown', e => { if(e.key==='Enter') window.startCreate() })
 
-// ── Card grid ────────────────────────────────────────────────────────────────
+// ── Card grid ─────────────────────────────────────────────────────────────────
 function healthDot(h) {
   const c = h==='Healthy'?'dot-green':h==='Progressing'?'dot-yellow':h==='Degraded'?'dot-red':'dot-gray'
   return `<span class="dot ${c}"></span>`
@@ -621,7 +730,7 @@ function buildCard(app, idx) {
   const dh = app.dev?.health ?? 'Unknown'
   const dc = dh==='Healthy'?'dot-green':dh==='Progressing'?'dot-yellow':dh==='Degraded'?'dot-red':'dot-gray'
   return `
-  <div class="app-card">
+  <div class="app-card" onclick="location.hash='#/app/${encodeURIComponent(app.name)}'">
     <div class="card-img" style="background:${grad}">
       <div class="card-status-badge"><span class="dot ${dc}"></span>${dh}</div>
       <div class="card-img-name">${app.name}</div>
@@ -630,26 +739,35 @@ function buildCard(app, idx) {
       <div class="card-envs">
         ${envChip(app.dev,'Dev')}${envChip(app.prod,'Prod')}
       </div>
-      <div class="card-links">
-        <a class="card-lnk" href="${app.links.dev}"       target="_blank">Dev <span class="card-lnk-arrow">›</span></a>
-        <a class="card-lnk" href="${app.links.prod}"      target="_blank">Prod <span class="card-lnk-arrow">›</span></a>
-        <a class="card-lnk" href="${app.links.argocd}"    target="_blank">ArgoCD <span class="card-lnk-arrow">›</span></a>
-        <a class="card-lnk" href="${app.links.grafana}"   target="_blank">Grafana <span class="card-lnk-arrow">›</span></a>
-        <a class="card-lnk" href="${app.links.infisical}" target="_blank">Infisical <span class="card-lnk-arrow">›</span></a>
-        <a class="card-lnk" href="${app.links.github}"    target="_blank">GitHub <span class="card-lnk-arrow">›</span></a>
-      </div>
     </div>
   </div>`
 }
+
 async function loadApps() {
   const grid = document.getElementById('card-grid')
   try {
     const apps = await fetch('/api/apps').then(r => r.json())
     if (!Array.isArray(apps) || !apps.length) {
       grid.innerHTML = `<div class="grid-empty"><div class="grid-empty-icon">🚀</div><p>No apps deployed yet.</p></div>`
+      appsCache = []
       return
     }
+    appsCache = apps
     grid.innerHTML = apps.map((a,i) => buildCard(a,i)).join('')
+
+    // Stagger cards in
+    animate(grid.querySelectorAll('.app-card'),
+      { opacity: [0, 1], y: [10, 0] },
+      { duration: 0.3, delay: stagger(0.06), easing: 'ease-out' }
+    )
+
+    // Refresh app page health if currently viewing one
+    if (currentApp) {
+      const app = apps.find(a => a.name === currentApp)
+      if (app) {
+        document.getElementById('app-hero-pills').innerHTML = envChip(app.dev,'Dev') + envChip(app.prod,'Prod')
+      }
+    }
   } catch(e) {
     grid.innerHTML = `<div class="grid-empty" style="color:var(--error)">Error loading apps: ${e}</div>`
   }
@@ -661,12 +779,13 @@ const seen = new Set()
 
 function relTime(ts) {
   const s = Math.floor((Date.now()-ts)/1000)
-  if (s<60) return 'just now'
-  if (s<3600) return Math.floor(s/60)+'m ago'
+  if (s<60)    return 'just now'
+  if (s<3600)  return Math.floor(s/60)+'m ago'
   if (s<86400) return Math.floor(s/3600)+'h ago'
   return new Date(ts).toLocaleDateString()
 }
-function openNotif() {
+
+window.openNotif = () => {
   panelOpen = true
   document.getElementById('notif-drawer').classList.add('open')
   document.getElementById('notif-overlay').classList.add('open')
@@ -674,7 +793,7 @@ function openNotif() {
   document.getElementById('notif-badge').classList.add('hidden')
   document.querySelectorAll('.notif-item.unread').forEach(el => el.classList.remove('unread'))
 }
-function closeNotif() {
+window.closeNotif = () => {
   panelOpen = false
   document.getElementById('notif-drawer').classList.remove('open')
   document.getElementById('notif-overlay').classList.remove('open')
@@ -683,11 +802,27 @@ function closeNotif() {
 function addNotif(n, isNew=false) {
   if (seen.has(n.id)) return
   seen.add(n.id)
+  allNotifs.push(n)
 
-  // Route to wizard pipeline for both live and catchup notifications
   handleDeployNotif(n)
 
-  const list = document.getElementById('notif-list')
+  // If on an app detail page that matches, prepend animated item
+  if (currentApp && notifMatchesApp(n, currentApp)) {
+    const list  = document.getElementById('app-notifs-list')
+    const empty = list.querySelector('.app-notifs-empty')
+    if (empty) empty.remove()
+    const el = document.createElement('div')
+    el.outerHTML  // placeholder
+    list.insertAdjacentHTML('afterbegin', tlItemHTML(n))
+    const newEl = list.firstElementChild
+    animate(newEl, { opacity: [0, 1] }, { duration: 0.2 })
+    const cnt = document.getElementById('app-notifs-count')
+    const cur = parseInt(cnt.textContent) || 0
+    cnt.textContent = String(cur + 1)
+  }
+
+  // Notification drawer
+  const list  = document.getElementById('notif-list')
   const empty = list.querySelector('.notif-empty')
   if (empty) empty.remove()
   const tags  = (n.tags??[]).map(t => `<span class="ni-tag">${t}</span>`).join('')
@@ -724,15 +859,17 @@ function connectSSE() {
   const es = new EventSource('/api/events')
   es.onmessage = e => {
     const msg = JSON.parse(e.data)
-    if (msg.type==='catchup') msg.notifications.forEach(n => addNotif(n, false))
+    if (msg.type==='catchup')      msg.notifications.forEach(n => addNotif(n, false))
     else if (msg.type==='notification') addNotif(msg.notification, true)
   }
   es.onerror = () => { es.close(); setTimeout(connectSSE, 5000) }
 }
 
+// ── Init ──────────────────────────────────────────────────────────────────────
 loadApps()
 setInterval(loadApps, 15000)
 connectSSE()
+route()
 </script>
 </body>
 </html>
