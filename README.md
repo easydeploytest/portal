@@ -19,7 +19,7 @@
 
 This app runs on **EasyDeploy** — a k3s cluster on Hetzner (IP `135.181.177.246`) managed by:
 
-- **ArgoCD** — GitOps continuous delivery. Every push to `main` triggers a deploy to dev. Prod is triggered by a GitHub Release.
+- **ArgoCD** — GitOps continuous delivery. Every push to `main` triggers a deploy to dev. Prod is triggered by a git tag push.
 - **Infisical** — Secret management. All environment variables are stored here, injected into pods automatically. No secrets in git.
 - **Grafana Cloud** — Observability. Metrics, traces, and logs. Requires manual OTel SDK setup in your app (see below).
 - **Docker registry** — Private image registry at `registry.easy-deploy.135.181.177.246.nip.io`.
@@ -28,16 +28,9 @@ This app runs on **EasyDeploy** — a k3s cluster on Hetzner (IP `135.181.177.24
 
 If this repo still runs the EasyDeploy template app, follow these steps:
 
-1. **Edit `app.yaml`** — set `name` (already `portal`), `team`, and `port` (your app's HTTP listen port):
-   ```yaml
-   name: portal
-   team: easy-deploy
-   port: 3000
-   ```
+1. **Write your app** in `src/` — delete template files, add your own. Any language is supported.
 
-2. **Write your app** in `src/` — delete template files, add your own. Any language is supported.
-
-3. **Update `Dockerfile`** — build your app and expose port `3000`. A `/healthz` endpoint returning HTTP 200 is required.
+2. **Update `Dockerfile`** — build your app and expose port `3000`. A `/healthz` endpoint returning HTTP 200 is required.
 
    Examples:
 
@@ -88,7 +81,7 @@ If this repo still runs the EasyDeploy template app, follow these steps:
    CMD ["/server"]
    ```
 
-4. **Push to `main`** — CI builds, pushes image, ArgoCD deploys to dev automatically.
+3. **Push to `main`** — CI builds, pushes image, ArgoCD deploys to dev automatically.
 
    ```bash
    git add -A
@@ -100,8 +93,9 @@ If this repo still runs the EasyDeploy template app, follow these steps:
 
 ```
 push to main
-  → GitHub Actions builds Docker image → pushes to registry.easy-deploy.135.181.177.246.nip.io
-  → CI writes new image tag to apps/portal/values-dev.yaml → commits back to EasyDeploy repo
+  → self-hosted runner runs the pipeline (visible in your repo's Actions tab)
+  → builds Docker image → pushes to registry
+  → writes new image tag → commits back to EasyDeploy repo
   → ArgoCD detects change → syncs portal-dev namespace
   → pod rolls out → dev URL is live
   → portal receives deploy notification
@@ -109,9 +103,9 @@ push to main
 
 Prod deploy:
 ```
-gh release create v1.0.0 --title "v1.0.0" --notes "First prod release"
-  → CI re-tags image with release version
-  → ArgoCD syncs portal-prod namespace
+git tag v1.0.0 && git push origin v1.0.0
+  → self-hosted runner re-tags image as v1.0.0
+  → commits prod values → ArgoCD syncs portal-prod namespace
   → prod URL is live: https://portal.easy-deploy.135.181.177.246.nip.io
 ```
 
