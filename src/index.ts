@@ -1,4 +1,5 @@
 import { opentelemetry } from '@elysiajs/opentelemetry'
+import { swagger } from '@elysiajs/swagger'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
@@ -164,6 +165,12 @@ new Elysia()
       const url = new URL(req.url)
       return !['/healthz', '/health', '/readyz', '/livez'].includes(url.pathname)
     },
+  }))
+  .use(swagger({
+    documentation: {
+      info: { title: 'EasyDeploy Portal API', version: '1.0.0' },
+    },
+    exclude: ['/healthz', '/'],
   }))
   .use(staticPlugin({ assets: 'public', prefix: '/public' }))
   .get('/', () => new Response(html, { headers: { 'Content-Type': 'text/html' } }))
