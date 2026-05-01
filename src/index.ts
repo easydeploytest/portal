@@ -6,7 +6,6 @@ import { Elysia, t } from 'elysia'
 import { staticPlugin } from '@elysiajs/static'
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
-import _sodium from 'libsodium-wrappers'
 
 const ARGOCD_URL      = process.env.ARGOCD_URL      ?? 'https://argocd.easy-deploy.135.181.177.246.nip.io'
 const ARGOCD_PASSWORD = process.env.ARGOCD_PASSWORD ?? ''
@@ -121,19 +120,6 @@ const ghHeaders = () => ({
   'Content-Type': 'application/json',
 })
 
-async function encryptSecret(plaintext: string, repoFullName: string) {
-  await _sodium.ready
-  const sodium = _sodium
-  const { key_id, key } = await fetch(
-    `https://api.github.com/repos/${repoFullName}/actions/secrets/public-key`,
-    { headers: ghHeaders() }
-  ).then(r => r.json()) as { key_id: string; key: string }
-
-  const binKey = sodium.from_base64(key, sodium.base64_variants.ORIGINAL)
-  const binMsg = sodium.from_string(plaintext)
-  const enc    = sodium.crypto_box_seal(binMsg, binKey)
-  return { key_id, encrypted_value: sodium.to_base64(enc, sodium.base64_variants.ORIGINAL) }
-}
 
 // ── SSE helper ───────────────────────────────────────────────────────────────
 function sseStream(handler: (send: (event: object) => void) => Promise<void>) {
@@ -315,17 +301,6 @@ new Elysia()
           }),
         ])
         send({ step: 'configure', message: 'app.yaml and RUNBOOK.md committed — deploy workflow triggered', status: 'done' })
-
-        // ── Step 4: set GH_PAT secret on new repo ───────────────────────────
-        send({ step: 'set_secret', message: 'Provisioning GH_PAT secret on repo…', status: 'running' })
-
-        const secretPayload = await encryptSecret(GH_PAT, repoFull)
-        await fetch(`https://api.github.com/repos/${repoFull}/actions/secrets/GH_PAT`, {
-          method: 'PUT',
-          headers: ghHeaders(),
-          body: JSON.stringify(secretPayload),
-        })
-        send({ step: 'set_secret', message: 'GH_PAT secret set — repo is fully autonomous', status: 'done' })
 
         // ── Done ─────────────────────────────────────────────────────────────
         const result = {
