@@ -8,15 +8,14 @@ import { staticPlugin } from '@elysiajs/static'
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 
-const ARGOCD_URL      = process.env.ARGOCD_URL      ?? 'https://argocd.easy-deploy.135.181.177.246.nip.io'
-const ARGOCD_PASSWORD = process.env.ARGOCD_PASSWORD ?? ''
-const CLUSTER_IP      = '135.181.177.246'
-const INFISICAL_URL   = 'https://infisical.easy-deploy.135.181.177.246.nip.io'
-const GRAFANA_URL     = 'https://shanzindlr.grafana.net'
-const INFISICAL_ORG_ID = '058c91f2-63c4-4a9b-a58a-74855d18f167'
-const GH_PAT          = process.env.GH_PAT ?? ''
-const GH_ORG          = 'easydeploytest'
-const TEMPLATE_REPO   = 'template'
+const ARGOCD_URL       = process.env.ARGOCD_URL       ?? 'https://argocd.easy-deploy.135.181.177.246.nip.io'
+const ARGOCD_PASSWORD  = process.env.ARGOCD_PASSWORD  ?? ''
+const INFISICAL_URL    = process.env.INFISICAL_URL    ?? ''
+const INFISICAL_ORG_ID = process.env.INFISICAL_ORG_ID ?? ''
+const GRAFANA_URL      = process.env.GRAFANA_URL      ?? 'https://shanzindlr.grafana.net'
+const GH_PAT           = process.env.GH_PAT           ?? ''
+const GH_ORG           = 'easydeploytest'
+const TEMPLATE_REPO    = 'template'
 
 type AppEnv = { health: string; sync: string }
 
@@ -81,6 +80,51 @@ async function getArgoToken() {
   return argoToken
 }
 
+// Cache ingress URLs per ArgoCD app name, TTL 60s
+const ingressCache = new Map<string, { url: string; ts: number }>()
+
+async function getIngressHost(appName: string): Promise<string | null> {
+  const cached = ingressCache.get(appName)
+  if (cached && Date.now() - cached.ts < 60_000) return cached.url
+
+  const token = argoToken || await getArgoToken()
+  try {
+    const treeRes = await fetch(`${ARGOCD_URL}/api/v1/applications/${appName}/resource-tree`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!treeRes.ok) return null
+    const tree = await treeRes.json() as { nodes?: any[] }
+
+    // Skip ACME solver ingresses (cert-manager temporary)
+    const node = tree.nodes?.find((n: any) => n.kind === 'Ingress' && !n.name.startsWith('cm-acme'))
+    if (!node) return null
+
+    // ArgoCD often surfaces the host in the info array — no extra round-trip needed
+    const hostsInfo = node.info?.find((i: any) => i.name === 'Hosts')
+    if (hostsInfo?.value) {
+      const url = `https://${hostsInfo.value.split(',')[0].trim()}`
+      ingressCache.set(appName, { url, ts: Date.now() })
+      return url
+    }
+
+    // Fall back to fetching the full ingress manifest
+    const group = node.group || 'networking.k8s.io'
+    const resRes = await fetch(
+      `${ARGOCD_URL}/api/v1/applications/${appName}/resource?namespace=${node.namespace}&resourceName=${node.name}&version=v1&kind=Ingress&group=${group}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    )
+    const resData = await resRes.json() as { manifest?: string }
+    const manifest = JSON.parse(resData.manifest ?? '{}')
+    const host = manifest.spec?.rules?.[0]?.host
+    if (host) {
+      const url = `https://${host}`
+      ingressCache.set(appName, { url, ts: Date.now() })
+      return url
+    }
+  } catch { /* fall through to null */ }
+  return null
+}
+
 async function fetchApps() {
   if (!argoToken) await getArgoToken()
   const res = await fetch(`${ARGOCD_URL}/api/v1/applications`, {
@@ -101,16 +145,29 @@ async function fetchApps() {
     }
   }
 
-  return Array.from(byBase.values()).map(app => ({
-    ...app,
-    links: {
-      dev:      `https://${app.name}-dev.easy-deploy.${CLUSTER_IP}.nip.io`,
-      prod:     `https://${app.name}.easy-deploy.${CLUSTER_IP}.nip.io`,
-      argocd:   `${ARGOCD_URL}/applications/${app.name}-dev`,
-      grafana:  `${GRAFANA_URL}/d/easydeploy-${app.name}/${app.name}`,
-      infisical: `${INFISICAL_URL}/organizations/${INFISICAL_ORG_ID}/projects/secret-management`,
-      github:   `https://github.com/${GH_ORG}/${app.name}`,
-    },
+  return Promise.all(Array.from(byBase.values()).map(async (app) => {
+    const [devUrl, prodUrl] = await Promise.all([
+      app.dev  ? getIngressHost(`${app.name}-dev`)  : null,
+      app.prod ? getIngressHost(`${app.name}-prod`) : null,
+    ])
+
+    const infisicalLink = INFISICAL_URL
+      ? (INFISICAL_ORG_ID
+          ? `${INFISICAL_URL}/organizations/${INFISICAL_ORG_ID}/projects/${app.name}`
+          : `${INFISICAL_URL}`)
+      : null
+
+    return {
+      ...app,
+      links: {
+        ...(devUrl      && { dev:      devUrl }),
+        ...(prodUrl     && { prod:     prodUrl }),
+        argocd:   `${ARGOCD_URL}/applications/${app.name}-dev`,
+        grafana:  `${GRAFANA_URL}/d/easydeploy-${app.name}/${app.name}`,
+        ...(infisicalLink && { infisical: infisicalLink }),
+        github:   `https://github.com/${GH_ORG}/${app.name}`,
+      },
+    }
   }))
 }
 
@@ -309,23 +366,22 @@ new Elysia()
         ])
         send({ step: 'configure', message: 'app.yaml and RUNBOOK.md committed — deploy workflow triggered', status: 'done' })
 
-        // ── Done ─────────────────────────────────────────────────────────────
+        // ── Done — resolve live URLs from ArgoCD once the app is deployed ────
+        const argoUrl = `${ARGOCD_URL}/applications/${name}-dev`
         const result = {
           done: true,
           repo:        `https://github.com/${repoFull}`,
           actions_url: `https://github.com/${repoFull}/actions`,
-          dev_url:     `https://${name}-dev.easy-deploy.${CLUSTER_IP}.nip.io`,
-          prod_url:    `https://${name}.easy-deploy.${CLUSTER_IP}.nip.io`,
-          argocd_url:  `${ARGOCD_URL}/applications/${name}-dev`,
+          argocd_url:  argoUrl,
           grafana_url: `${GRAFANA_URL}/d/easydeploy-${name}/${name}`,
         }
         send(result)
 
-        // also push a portal notification so other browser tabs see it
         pushNotification({
-          title: `${name} deployed`,
-          body: `Dev: ${result.dev_url}`,
+          title: `${name} deploying`,
+          body: `Repo created — waiting for ArgoCD to sync`,
           tags: ['deploy', 'success'],
+          links: [{ label: 'ArgoCD', url: argoUrl }],
         })
       })
     },
